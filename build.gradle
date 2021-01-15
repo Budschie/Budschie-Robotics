@@ -51,6 +51,8 @@ remotes {
 
 task deploy {
     dependsOn 'jar'
+    group 'build'
+    description 'Builds the associated files and uploads them via an ssh session to the EV3.'
     doLast {
         println 'Deploying files...'
         ssh.run {
