@@ -21,11 +21,19 @@ public class Main
 	
 	public static void main(String[] args)
 	{		
+		System.out.println("HELLO FROM MAIN");
 		Arbitrator arbitrator = new Arbitrator(new Behavior[] { new FollowTrackBehaviour(() -> {
 			float[] value = null;
 			SENSOR_1.getRGBMode().fetchSample(value, 0);
 			
 			return value[0] < 0.2 ? Optional.of(.5f) : Optional.empty();
-		}, null, new WheelBasedMovementController(null, null))});
+		}, () -> {
+			float[] value = null;
+			SENSOR_2.getRGBMode().fetchSample(value, 0);
+			
+			return value[0] < 0.2 ? Optional.of(.5f) : Optional.empty();
+		}, new WheelBasedMovementController(MOTOR_LEFT, MOTOR_RIGHT))});
+		arbitrator.go();
+		System.out.println("BYE FROM MAIN");
 	}
 }

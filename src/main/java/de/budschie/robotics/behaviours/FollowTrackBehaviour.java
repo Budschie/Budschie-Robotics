@@ -28,17 +28,21 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 		Optional<Float> leftCorrectionCalculated = leftCorrection.get();
 		Optional<Float> rightCorrectionCalculated = rightCorrection.get();
 		
+		System.out.println("Executing track following...");
+		
 		// We aren't right enough
 		if(leftCorrectionCalculated.isPresent())
 		{
 			// Go right
 			movementController.turnRight(leftCorrectionCalculated.get());
+			System.out.printf("We're not right enough by %d.%n", leftCorrectionCalculated.get());
 		}
 		// We aren't left enough
 		else if(rightCorrectionCalculated.isPresent())
 		{
 			// Go left
 			movementController.turnLeft(rightCorrectionCalculated.get());
+			System.out.printf("We're not left enough by %d.%n", leftCorrectionCalculated.get());
 		}
 		else
 			movementController.turnLeft(0);

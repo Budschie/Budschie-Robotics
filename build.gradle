@@ -5,6 +5,7 @@
  * For more details take a look at the Java Libraries chapter in the Gradle
  * User Manual available at https://docs.gradle.org/6.3/userguide/java_library_plugin.html
  */
+ import groovy.swing.SwingBuilder
 
 plugins {
     // Apply the java-library plugin to add support for Java Library
@@ -25,7 +26,7 @@ repositories {
 
 dependencies
 {
-    implementation 'com.github.ev3dev-lang-java:ev3dev-lang-java:2.4.13'
+    implementation 'com.github.ev3dev-lang-java:ev3dev-lang-java:2.5.3'
 }
 
 version '1.0'
@@ -33,7 +34,8 @@ version '1.0'
 jar {
     manifest {
         attributes(
-                'Main-Class': 'de.budschie.robotics.Main'
+                'Main-Class': 'de.budschie.robotics.Main',
+                'Class-Path': '/home/robot/java/libraries/*'
         )
     }
 }
@@ -49,6 +51,50 @@ remotes {
     }
 }
 
+task setupEV3 {
+    doLast {
+        String pass = ''
+        new SwingBuilder().edt {
+            dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
+      title: 'Enter password', // Dialog title
+      alwaysOnTop: true, // pretty much what the name says
+      resizable: true, // Don't allow the user to resize the dialog
+      locationRelativeTo: null, // Place dialog in center of the screen
+      pack: true, // We need to pack the dialog (so it will take the size of it's children
+      show: true // Let's show it
+  ) {
+                vbox { // Put everything below each other
+                    label(text: 'Please enter key passphrase:')
+                    input = passwordField()
+                    button(defaultButton: true, text: 'OK', actionPerformed: {
+        pass = input.password // Set pass variable to value of input field
+        dispose() // Close dialog
+                    })
+                }
+  }
+        }
+        ssh.run {
+            session(remotes.ev3) {
+                println 'Setting up EV3...'
+                println 'Cleaning up old directories...'
+                execute 'rm -r java; mkdir -p java/libraries'
+                println 'Getting logging lib...'
+                execute 'wget -P java/libraries https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.9/slf4j-api-1.7.9.jar'
+                println 'Downloading installer...'
+                execute 'rm -r installer; mkdir -p installer'
+                execute 'wget -P installer https://raw.githubusercontent.com/ev3dev-lang-java/installer/master/installer.sh'
+                println 'Updating repos...'
+                execute 'echo ' + pass + ' | sudo -S -k bash installer/installer.sh update'
+                println 'Downloading java...'
+                execute 'echo ' + pass + ' | sudo -S -k bash installer/installer.sh java'
+                println 'Downloading libs...'
+                execute 'echo ' + pass + ' | sudo -S -k bash installer/installer.sh javaLibs'
+                println 'Done.'
+            }
+        }
+    }
+}
+
 task deploy {
     dependsOn 'jar'
     group 'build'
@@ -61,13 +107,13 @@ task deploy {
                 // execute 'mkdir project.name + '-' + project.version'
                 execute 'rm -r ' + project.name + '; mkdir ' + project.name
                 put from: file('build/libs/' + project.name + '-' + project.version + '.jar'), into: '/home/robot/' + project.name
-                
+
                 // This may be a bit dirty, but cmon, I am a noob
-                execute 'echo java -jar ' + project.name + '-' + project.version + '.jar > ' + project.name + '/run.sh'
-                
+                execute 'echo java -cp "' + project.name + '-' + project.version + '.jar:/home/robot/java/libraries/*" > ' + project.name + '/run.sh'
+
                 // We couldn't execute this file before, but with this, we grant ourselves full rights on this file
                 execute 'chmod u+rwx ' + project.name + '/run.sh'
-               // execute 'echo java -jar compiledJars/' + roject.name + '-' + project.version + '.jar > run' + project.name + project.version
+            // execute 'echo java -jar compiledJars/' + roject.name + '-' + project.version + '.jar > run' + project.name + project.version
             }
         }
         println 'Deployed files.'
