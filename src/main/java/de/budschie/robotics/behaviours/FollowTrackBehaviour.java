@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 
 import lejos.robotics.subsumption.Behavior;
 
-public class FollowTrackBehaviour implements Behavior
+public class FollowTrackBehaviour extends AbstractBehaviour
 {
 	Supplier<Optional<Float>> leftCorrection, rightCorrection;
 	IAbstractMovementController movementController;
@@ -16,10 +16,10 @@ public class FollowTrackBehaviour implements Behavior
 		this.movementController = movementController;
 	}
 	
-	@Override
-	public boolean takeControl()
+	public FollowTrackBehaviour(Supplier<Optional<Float>> correctionLeft, Supplier<Optional<Float>> correctionRight, IAbstractMovementController movementController, Supplier<Boolean> shouldTakeControlOverrider)
 	{
-		return true;
+		super(shouldTakeControlOverrider);
+		this.movementController = movementController;
 	}
 
 	@Override
