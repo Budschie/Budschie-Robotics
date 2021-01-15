@@ -31,15 +31,6 @@ dependencies
 
 version '1.0'
 
-jar {
-    manifest {
-        attributes(
-                'Main-Class': 'de.budschie.robotics.Main',
-                'Class-Path': '/home/robot/java/libraries/*'
-        )
-    }
-}
-
 remotes {
     ev3 {
         host = 'ev3dev'
@@ -76,14 +67,24 @@ task setupEV3 {
         ssh.run {
             session(remotes.ev3) {
                 println 'Setting up EV3...'
+                println ''
+                println '##################################'
+                println '# Note that even if this setup   #'
+                println '# shows that it failed, it might #'
+                println '# still have succeded due to an  #'
+                println '# probable scripting error in    #'
+                println '# the installer.sh file.         #'
+                println '##################################'
+                println ''
                 println 'Cleaning up old directories...'
-                execute 'rm -r java; mkdir -p java/libraries'
+                execute 'echo ' + pass + ' | sudo -S -k rm -r java; mkdir -p java/libraries'
                 println 'Getting logging lib...'
-                execute 'wget -P java/libraries https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.9/slf4j-api-1.7.9.jar'
+                // For whatever reason, the installer script overrides the files, and as it crashes, I can't excute behind it, so that is a bit unfortunate
+                execute 'wget -P java/loglibs https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.9/slf4j-api-1.7.9.jar'
                 println 'Downloading installer...'
                 execute 'rm -r installer; mkdir -p installer'
                 execute 'wget -P installer https://raw.githubusercontent.com/ev3dev-lang-java/installer/master/installer.sh'
-                println 'Updating repos...'
+                println 'Updating Debian...'
                 execute 'echo ' + pass + ' | sudo -S -k bash installer/installer.sh update'
                 println 'Downloading java...'
                 execute 'echo ' + pass + ' | sudo -S -k bash installer/installer.sh java'
@@ -109,7 +110,7 @@ task deploy {
                 put from: file('build/libs/' + project.name + '-' + project.version + '.jar'), into: '/home/robot/' + project.name
 
                 // This may be a bit dirty, but cmon, I am a noob
-                execute 'echo java -cp "' + project.name + '-' + project.version + '.jar:/home/robot/java/libraries/*" > ' + project.name + '/run.sh'
+                execute 'echo java -cp "' + project.name + '-' + project.version + '.jar:/home/robot/java/libraries/*:/home/robot/java/loglibs/* de.budschie.robotics.Main" > ' + project.name + '/run.sh'
 
                 // We couldn't execute this file before, but with this, we grant ourselves full rights on this file
                 execute 'chmod u+rwx ' + project.name + '/run.sh'
