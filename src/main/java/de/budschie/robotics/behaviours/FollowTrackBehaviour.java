@@ -11,15 +11,19 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 	Supplier<Optional<Float>> leftCorrection, rightCorrection;
 	IAbstractMovementController movementController;
 	
-	public FollowTrackBehaviour(Supplier<Optional<Float>> correctionLeft, Supplier<Optional<Float>> correctionRight, IAbstractMovementController movementController)
+	public FollowTrackBehaviour(Supplier<Optional<Float>> leftCorrection, Supplier<Optional<Float>> rightCorrection, IAbstractMovementController movementController)
 	{
 		this.movementController = movementController;
+		this.leftCorrection = leftCorrection;
+		this.rightCorrection = rightCorrection;
 	}
 	
-	public FollowTrackBehaviour(Supplier<Optional<Float>> correctionLeft, Supplier<Optional<Float>> correctionRight, IAbstractMovementController movementController, Supplier<Boolean> shouldTakeControlOverrider)
+	public FollowTrackBehaviour(Supplier<Optional<Float>> leftCorrection, Supplier<Optional<Float>> rightCorrection, IAbstractMovementController movementController, Supplier<Boolean> shouldTakeControlOverrider)
 	{
 		super(shouldTakeControlOverrider);
 		this.movementController = movementController;
+		this.leftCorrection = leftCorrection;
+		this.rightCorrection = rightCorrection;
 	}
 
 	@Override

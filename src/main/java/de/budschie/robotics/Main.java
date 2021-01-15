@@ -2,6 +2,7 @@ package de.budschie.robotics;
 
 import java.util.Optional;
 
+import de.budschie.robotics.behaviours.CustomBehaviour;
 import de.budschie.robotics.behaviours.FollowTrackBehaviour;
 import de.budschie.robotics.behaviours.WheelBasedMovementController;
 import ev3dev.actuators.lego.motors.NXTRegulatedMotor;
@@ -21,18 +22,31 @@ public class Main
 	
 	public static void main(String[] args)
 	{		
-		System.out.println("HELLO FROM MAIN");
-		Arbitrator arbitrator = new Arbitrator(new Behavior[] { new FollowTrackBehaviour(() -> {
-			float[] value = null;
-			SENSOR_1.getRGBMode().fetchSample(value, 0);
-			
-			return value[0] < 0.2 ? Optional.of(.5f) : Optional.empty();
-		}, () -> {
-			float[] value = null;
-			SENSOR_2.getRGBMode().fetchSample(value, 0);
-			
-			return value[0] < 0.2 ? Optional.of(.5f) : Optional.empty();
-		}, new WheelBasedMovementController(MOTOR_LEFT, MOTOR_RIGHT))});
+		System.out.println("Available modes: " + String.join(", ", SENSOR_1.getAvailableModes()));
+		
+//		Behavior[] behaviours = new Behavior[] { new FollowTrackBehaviour(() -> {
+//			float[] value = null;
+//			System.out.println("1: " + SENSOR_1);
+//			SENSOR_1.fetchSample(value, 0);
+//			System.out.println(value);
+//			
+//			return value[0] < 0.2 ? Optional.of(.5f) : Optional.empty();
+//		}, () -> {
+//			float[] value = null;
+//			System.out.println("2: " + SENSOR_2);
+//			SENSOR_2.fetchSample(value, 0);
+//			
+//			return value[0] < 0.2 ? Optional.of(.5f) : Optional.empty();
+//		}, new WheelBasedMovementController(MOTOR_LEFT, MOTOR_RIGHT), () -> true)};
+		
+		Arbitrator arbitrator = new Arbitrator(new Behavior[] {
+		new CustomBehaviour(() -> 
+		{
+			MOTOR_LEFT.forward();
+			MOTOR_LEFT.setSpeed(100);
+			MOTOR_LEFT.startSynchronization();
+		},
+		() -> {}, () -> true)});
 		arbitrator.go();
 		System.out.println("BYE FROM MAIN");
 	}
