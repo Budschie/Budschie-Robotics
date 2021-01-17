@@ -5,7 +5,7 @@ import ev3dev.actuators.lego.motors.NXTRegulatedMotor;
 public class WheelBasedMovementController implements IAbstractMovementController
 {
 	NXTRegulatedMotor motorLeft, motorRight;
-	float speed = 1;
+	int speed = 1;
 	float percentage = 1;
 	RelativeDirection turnDirection = RelativeDirection.LEFT;
 	RelativeDirection driveDirection = RelativeDirection.FORWARD;
@@ -16,12 +16,12 @@ public class WheelBasedMovementController implements IAbstractMovementController
 		this.motorRight = motorRight;
 	}
 	
-	public float getSpeed()
+	public int getSpeed()
 	{
 		return speed;
 	}
 	
-	public void setSpeed(float speed)
+	public void setSpeed(int speed)
 	{
 		this.speed = speed;
 	}
@@ -48,18 +48,19 @@ public class WheelBasedMovementController implements IAbstractMovementController
 	public void turnLeft(float percentage)
 	{
 		turnDirection = RelativeDirection.LEFT;
-		this.percentage = percentage;
+		this.percentage = 1 - percentage;
 	}
 
 	@Override
 	public void turnRight(float percentage)
 	{
 		turnDirection = RelativeDirection.RIGHT;
-		this.percentage = percentage;
+		this.percentage = 1 - percentage;
 	}
 	
 	public void updateMotorState()
 	{
+		motorLeft.startSynchronization();
 		if(driveDirection == RelativeDirection.STOP)
 		{
 			motorLeft.stop();
@@ -67,32 +68,34 @@ public class WheelBasedMovementController implements IAbstractMovementController
 		}
 		else
 		{
+			// Update speed
+			float percentageOfFull = speed * percentage;
+			//System.out.printf("Speed: %f%nPercentage: %f%nPercentage of speed: %f", speed, percentage, percentageOfFull);
+			
+			if(turnDirection == RelativeDirection.LEFT)
+			{
+				motorLeft.setSpeed((int) (percentageOfFull));
+				motorRight.setSpeed((int) (speed));
+			}
+			// Technically not necessary, but calling this as it makes all of this clearer
+			else if(turnDirection == RelativeDirection.RIGHT)
+			{
+				motorLeft.setSpeed((int) (speed));
+				motorRight.setSpeed((int) (percentageOfFull));
+			}
+			
 			if(driveDirection == RelativeDirection.FORWARD)
 			{
+				System.out.println("Forward");
 				motorLeft.forward();
 				motorRight.forward();
 			}
 			// Technically not necessary, but calling this as it makes all of this clearer
 			else if(driveDirection == RelativeDirection.BACKWARD)
 			{
+				System.out.println("Backward");
 				motorLeft.backward();
 				motorRight.backward();
-			}
-			
-			// Update speed
-			float percentageOfFull = speed * percentage;
-			System.out.printf("Speed: %f%n%Percentage: %f%nPercentage of speed: %f", speed, percentage, percentageOfFull);
-			
-			if(turnDirection == RelativeDirection.LEFT)
-			{
-				motorLeft.setSpeed((int) (percentageOfFull * 360));
-				motorRight.setSpeed((int) (speed * 360));
-			}
-			// Technically not necessary, but calling this as it makes all of this clearer
-			else if(turnDirection == RelativeDirection.RIGHT)
-			{
-				motorLeft.setSpeed((int) (speed * 360));
-				motorRight.setSpeed((int) (percentageOfFull * 360));
 			}
 		}
 	}

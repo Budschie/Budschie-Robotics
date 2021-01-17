@@ -15,18 +15,18 @@ public class AdvancedFollowTrackBehaviour extends FollowTrackBehaviour
 	
 	public AdvancedFollowTrackBehaviour(Supplier<Optional<Float>> correctionLeft,
 			Supplier<Optional<Float>> correctionRight, IAbstractMovementController movementController,
-			Supplier<Boolean> foundTrackLeft, Supplier<Boolean> foundTrackRight)
+			Supplier<Boolean> foundTrackLeft, Supplier<Boolean> foundTrackRight, int speed)
 	{
-		super(correctionLeft, correctionRight, movementController);
+		super(correctionLeft, correctionRight, movementController, speed);
 		this.foundTrackLeft = foundTrackLeft;
 		this.foundTrackRight = foundTrackRight;
 	}
 	
 	public AdvancedFollowTrackBehaviour(Supplier<Optional<Float>> correctionLeft,
 			Supplier<Optional<Float>> correctionRight, IAbstractMovementController movementController,
-			Supplier<Boolean> foundTrackLeft, Supplier<Boolean> foundTrackRight, Supplier<Boolean> shouldTakeControllOverrider)
+			Supplier<Boolean> foundTrackLeft, Supplier<Boolean> foundTrackRight, int speed, Supplier<Boolean> shouldTakeControllOverrider)
 	{
-		super(correctionLeft, correctionRight, movementController, shouldTakeControllOverrider);
+		super(correctionLeft, correctionRight, movementController, speed, shouldTakeControllOverrider);
 		this.foundTrackLeft = foundTrackLeft;
 		this.foundTrackRight = foundTrackRight;
 	}
@@ -38,17 +38,26 @@ public class AdvancedFollowTrackBehaviour extends FollowTrackBehaviour
 	
 	@Override
 	public void action()
-	{
-		super.action();
+	{		
+		boolean movementCanceled = false;
 		
 		if(foundTrackLeft.get())
 		{
-			foundTrackEvent.fire(new FoundTrackEventArgs(RelativeDirection.LEFT));
+			FoundTrackEventArgs args = new FoundTrackEventArgs(RelativeDirection.LEFT); 
+			foundTrackEvent.fire(args);
+			
+			movementCanceled |= args.isMovementCanceled();
 		}
 		
 		if(foundTrackRight.get())
 		{
-			foundTrackEvent.fire(new FoundTrackEventArgs(RelativeDirection.RIGHT));
+			FoundTrackEventArgs args = new FoundTrackEventArgs(RelativeDirection.RIGHT); 
+			foundTrackEvent.fire(args);
+			
+			movementCanceled |= args.isMovementCanceled();
 		}
+		
+		if(!movementCanceled)
+			super.action();
 	}
 }

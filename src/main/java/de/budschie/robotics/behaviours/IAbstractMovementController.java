@@ -16,4 +16,13 @@ public interface IAbstractMovementController
 	
 	/** The amount should be implemented as a percentage decrease of the other motor**/
 	void turnRight(float amount);
+	
+	/** This is the speed. It is in degrees per second. **/
+	void setSpeed(int amount);
+	
+	/** Returns the speed that is currently set. **/
+	int getSpeed();
+	
+	/** Updates the current state of the movement controller. **/
+	void updateMotorState();
 }
