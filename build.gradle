@@ -65,6 +65,7 @@ task setupEV3 {
   }
         }
         ssh.run {
+            // Maybe we do 'multithreading' in the future...
             session(remotes.ev3) {
                 println 'Setting up EV3...'
                 println ''
@@ -118,5 +119,21 @@ task deploy {
             }
         }
         println 'Deployed files.'
+    }
+
+    task deployAndRun {
+        dependsOn 'deploy'
+        group 'build'
+        description 'Builds the associated files and uploads the via an ssh session to the EV3. Then, this given program will be executed.'
+
+        doLast {
+            println 'Executing...'
+            ssh.run {
+                session(remotes.ev3) {
+                    execute 'cd ' + project.name + '; ./run.sh'
+                }
+            }
+            println 'Executed.'
+        }
     }
 }

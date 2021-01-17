@@ -29,7 +29,10 @@ public abstract class AbstractBehaviour implements Behavior
 	@Override
 	public boolean takeControl()
 	{
-		return !disabled && (shouldTakeControlOverrider.isPresent() ? shouldTakeControlOverrider.get().get() : overridableTakeControl());
+		boolean takeControl = overridableTakeControl();
+		if(shouldTakeControlOverrider.isPresent())
+			takeControl |= shouldTakeControlOverrider.get().get();
+		return !disabled && takeControl;
 	}
 	
 	public boolean overridableTakeControl()

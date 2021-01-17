@@ -11,6 +11,7 @@ import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.SensorPort;
 import lejos.robotics.subsumption.Arbitrator;
 import lejos.robotics.subsumption.Behavior;
+import lejos.utility.Delay;
 
 public class Main
 {
@@ -18,7 +19,7 @@ public class Main
 	public static final EV3ColorSensor SENSOR_2 = new EV3ColorSensor(SensorPort.S2);
 	
 	public static final NXTRegulatedMotor MOTOR_LEFT = new NXTRegulatedMotor(MotorPort.A);
-	public static final NXTRegulatedMotor MOTOR_RIGHT = new NXTRegulatedMotor(MotorPort.B);
+	public static final NXTRegulatedMotor MOTOR_RIGHT = new NXTRegulatedMotor(MotorPort.D);
 	
 	public static void main(String[] args)
 	{		
@@ -39,6 +40,15 @@ public class Main
 //			return value[0] < 0.2 ? Optional.of(.5f) : Optional.empty();
 //		}, new WheelBasedMovementController(MOTOR_LEFT, MOTOR_RIGHT), () -> true)};
 		
+		WheelBasedMovementController movementController = new WheelBasedMovementController(MOTOR_LEFT, MOTOR_RIGHT);
+		movementController.turnLeft(0.5f);
+		movementController.setSpeed(300);
+		movementController.updateMotorState();
+		Delay.msDelay(6000);
+		movementController.stop();
+		movementController.updateMotorState();
+		
+		/*
 		Arbitrator arbitrator = new Arbitrator(new Behavior[] {
 		new CustomBehaviour(() -> 
 		{
@@ -49,5 +59,6 @@ public class Main
 		() -> {}, () -> true)});
 		arbitrator.go();
 		System.out.println("BYE FROM MAIN");
+		*/
 	}
 }

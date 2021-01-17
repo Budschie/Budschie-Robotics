@@ -81,6 +81,7 @@ public class WheelBasedMovementController implements IAbstractMovementController
 			
 			// Update speed
 			float percentageOfFull = speed * percentage;
+			System.out.printf("Speed: %f%n%Percentage: %f%nPercentage of speed: %f", speed, percentage, percentageOfFull);
 			
 			if(turnDirection == RelativeDirection.LEFT)
 			{
