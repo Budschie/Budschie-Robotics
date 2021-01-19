@@ -36,8 +36,8 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 	@Override
 	public void action()
 	{
-		Optional<Float> leftCorrectionCalculated = leftCorrection.get();
-		Optional<Float> rightCorrectionCalculated = rightCorrection.get();
+		Optional<Float> leftCorrectionCalculated = getLeftCorrection();
+		Optional<Float> rightCorrectionCalculated = getRightCorrection();
 		
 		System.out.println("Executing track following...");
 		
@@ -57,7 +57,7 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 		{
 			// Go left
 			movementController.turnLeft(rightCorrectionCalculated.get());
-			System.out.printf("We're not left enough by %f.%n", leftCorrectionCalculated.get());
+			System.out.printf("We're not left enough by %f.%n", rightCorrectionCalculated.get());
 			edited = true;
 			turnLeftFlag = false;
 		}
@@ -76,6 +76,16 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 			movementController.setSpeed(speed);
 			movementController.updateMotorState();
 		}
+	}
+	
+	public Optional<Float> getLeftCorrection()
+	{
+		return leftCorrection.get();
+	}
+	
+	public Optional<Float> getRightCorrection()
+	{
+		return rightCorrection.get();
 	}
 	
 	/** Ignoring the setting of a flag because action should exit pretty quickly. 

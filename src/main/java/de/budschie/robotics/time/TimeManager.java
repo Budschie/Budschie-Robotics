@@ -14,12 +14,16 @@ public class TimeManager
 	public long getElapsedTime()
 	{
 		assertValid();
-		return System.currentTimeMillis() - ms;
+		long currentElapsedTime = System.currentTimeMillis() - ms;
+		System.out.println("Fetching current elapsed time: " + currentElapsedTime);
+		return currentElapsedTime;
 	}
 	
 	private void assertValid()
 	{
 		if(!hasStarted)
-			throw new IllegalStateException("The time manager hasn't started yet.");
+		{
+			start();
+		}
 	}
 }

@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 
 import lejos.robotics.subsumption.Behavior;
 
-public abstract class AbstractBehaviour implements Behavior
+public abstract class AbstractBehaviour implements Behavior, Runnable
 {
 	// Pretty elegant name lol
 	protected boolean disabled;
@@ -48,5 +48,11 @@ public abstract class AbstractBehaviour implements Behavior
 	public void setDisabled(boolean disabled)
 	{
 		this.disabled = disabled;
+	}
+	
+	@Override
+	public void run()
+	{
+		action();
 	}
 }

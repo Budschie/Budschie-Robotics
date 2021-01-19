@@ -36,12 +36,22 @@ public class AdvancedFollowTrackBehaviour extends FollowTrackBehaviour
 		return foundTrackEvent;
 	}
 	
+	public boolean hasFoundTrackLeft()
+	{
+		return foundTrackLeft.get();
+	}
+	
+	public boolean hasFoundTrackRight()
+	{
+		return foundTrackRight.get();
+	}
+	
 	@Override
 	public void action()
 	{		
 		boolean movementCanceled = false;
 		
-		if(foundTrackLeft.get())
+		if(hasFoundTrackLeft())
 		{
 			FoundTrackEventArgs args = new FoundTrackEventArgs(RelativeDirection.LEFT); 
 			foundTrackEvent.fire(args);
@@ -49,7 +59,7 @@ public class AdvancedFollowTrackBehaviour extends FollowTrackBehaviour
 			movementCanceled |= args.isMovementCanceled();
 		}
 		
-		if(foundTrackRight.get())
+		if(hasFoundTrackRight())
 		{
 			FoundTrackEventArgs args = new FoundTrackEventArgs(RelativeDirection.RIGHT); 
 			foundTrackEvent.fire(args);

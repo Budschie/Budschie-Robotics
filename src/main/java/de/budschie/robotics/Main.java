@@ -1,18 +1,16 @@
 package de.budschie.robotics;
 
-import java.util.Optional;
-
-import de.budschie.robotics.behaviours.CustomBehaviour;
-import de.budschie.robotics.behaviours.FollowTrackBehaviour;
+import de.budschie.robotics.behaviours.ImplementedAdvancedFollowTrackBehaviour;
+import de.budschie.robotics.behaviours.RelativeDirection;
+import de.budschie.robotics.behaviours.TimedBehaviour;
 import de.budschie.robotics.behaviours.WheelBasedMovementController;
-import de.budschie.robotics.sensors.ImplementedLightSensor;
+import de.budschie.robotics.time.TimeManager;
 import ev3dev.actuators.lego.motors.NXTRegulatedMotor;
 import ev3dev.sensors.ev3.EV3ColorSensor;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.SensorPort;
 import lejos.robotics.subsumption.Arbitrator;
 import lejos.robotics.subsumption.Behavior;
-import lejos.utility.Delay;
 
 public class Main
 {
@@ -25,12 +23,17 @@ public class Main
 	public static final NXTRegulatedMotor MOTOR_LEFT = new NXTRegulatedMotor(MotorPort.A);
 	public static final NXTRegulatedMotor MOTOR_RIGHT = new NXTRegulatedMotor(MotorPort.D);
 	
+	/** 
+	 * I HATE C++ and IT'S FU**ING DENYING OF CIRCULAR DEPS
+	 * @param args
+	 */
 	public static void main(String[] args)
 	{		
 		//System.out.println("Available modes: " + String.join(", ", SENSOR_1.getAvailableModes()));
 		
 		long startingTime = System.currentTimeMillis();
 		
+		/*
 		Behavior[] behaviours = new Behavior[] { new FollowTrackBehaviour(() -> {
 			float[] value = new float[1];
 			SENSOR_1.fetchSample(value, 0);
@@ -45,6 +48,32 @@ public class Main
 			
 			return value[0] < 400 ? Optional.of(.5f) : Optional.empty();
 		}, new WheelBasedMovementController(MOTOR_LEFT, MOTOR_RIGHT), 500, () -> (System.currentTimeMillis() - startingTime) < 8000)};
+		*/
+		
+		TimeManager timeManager = new TimeManager();
+		WheelBasedMovementController movementController = new WheelBasedMovementController(MOTOR_LEFT, MOTOR_RIGHT);
+		
+		
+		// Eclipse is a shithole of a software
+		Behavior[] behaviours = new Behavior[] {
+			TimedBehaviour.of(new ImplementedAdvancedFollowTrackBehaviour((value) -> value < 400, movementController, () -> 
+			{
+				// We need to init this, so that fetchValue doesn't write nothing
+				// Why couldn't this stupd thing be done in one line??!? I DONT UNDERSTAND IT!
+				float[] value = new float[1];
+				SENSOR_1.fetchSample(value, 0);
+				return (int)((value[0]) * 1000);
+			},
+			// Did I mention eclipse's handling of compile errors is a pain in the ass?
+			() -> 
+			{
+				// We need to init this, so that fetchValue doesn't write nothing
+				// Why couldn't this stupd thing be done in one line??!? I DONT UNDERSTAND IT!
+				float[] value = new float[1];
+				SENSOR_2.fetchSample(value, 0);
+				return (int)((value[0]) * 1000);
+			}, 360, RelativeDirection.LEFT, .5f, () -> true), timeManager, 0, 20000)
+		};
 		
 		
 		
@@ -68,6 +97,8 @@ public class Main
 		
 		Arbitrator arbitrator = new Arbitrator(behaviours, true);
 		arbitrator.go();
+		movementController.stop();
+		movementController.updateMotorState();
 		System.out.println("BYE FROM MAIN");
 	}
 }
