@@ -25,11 +25,7 @@ public class Main
 	
 	public static final NXTRegulatedMotor MOTOR_LEFT = new NXTRegulatedMotor(MotorPort.A);
 	public static final NXTRegulatedMotor MOTOR_RIGHT = new NXTRegulatedMotor(MotorPort.D);
-	
-	/** 
-	 * I HATE C++ and IT'S FU**ING DENYING OF CIRCULAR DEPS
-	 * @param args
-	 */
+
 	public static void main(String[] args)
 	{		
 		//System.out.println("Available modes: " + String.join(", ", SENSOR_1.getAvailableModes()));
