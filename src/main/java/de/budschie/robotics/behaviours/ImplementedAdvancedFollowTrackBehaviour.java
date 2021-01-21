@@ -47,7 +47,7 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 			// Tbh this code looks very similar to the code above, we should maybe avoid this
 			boolean isTestedAsBlack = isBlack.test(valueLeft.get());
 			
-			if(!isTestedAsBlack)
+			if(isTestedAsBlack)
 				return Optional.of(correctionStrength);
 		}
 		

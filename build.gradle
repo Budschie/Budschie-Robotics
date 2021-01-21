@@ -130,7 +130,7 @@ task deploy {
             println 'Executing...'
             ssh.run {
                 session(remotes.ev3) {
-                    execute project.name + '/run.sh'
+                    execute 'cd ' + project.name + '; ./run.sh'
                 }
             }
             println 'Executed.'

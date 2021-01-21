@@ -17,11 +17,11 @@ import lejos.robotics.subsumption.Behavior;
 
 public class Main
 {
-	// Left; maybe switched with SENSOR_2
-	public static final EV3ColorSensor SENSOR_1 = new EV3ColorSensor(SensorPort.S1);
-	
+	// Left; In driving dir
+	public static final EV3ColorSensor SENSOR_1 = new EV3ColorSensor(SensorPort.S4);
 	// Right
-	public static final EV3ColorSensor SENSOR_2 = new EV3ColorSensor(SensorPort.S4);
+	public static final EV3ColorSensor SENSOR_2 = new EV3ColorSensor(SensorPort.S1);
+	
 	
 	public static final NXTRegulatedMotor MOTOR_LEFT = new NXTRegulatedMotor(MotorPort.A);
 	public static final NXTRegulatedMotor MOTOR_RIGHT = new NXTRegulatedMotor(MotorPort.D);
@@ -60,31 +60,40 @@ public class Main
 		
 		WheelBasedMovementController movementController = new WheelBasedMovementController(MOTOR_LEFT, MOTOR_RIGHT);
 		
+		SENSOR_1.switchMode("REFLECT", 0);
+		SENSOR_2.switchMode("REFLECT", 0);
+		
+		
 		TaskManager concurrentTaskManager = new TaskManager(TaskExecutors.CONCURRENT_EXECUTOR);
 		
-		// Eclipse is a shithole of a software
+		// Eclipse is a shithole of a software. Why is the detection of compile errors in lambda expressions downright bad???
+		ImplementedAdvancedFollowTrackBehaviour implementedTrackManager = new ImplementedAdvancedFollowTrackBehaviour((value) -> (value < 330), movementController, () -> 
+		{
+			// We need to init this, so that fetchValue doesn't write nothing
+			// Why couldn't this stupd thing be done in one line??!? I DONT UNDERSTAND IT!
+			float[] value = new float[1];
+			SENSOR_1.fetchSample(value, 0);
+			// System.out.println("Left sensor value: " + value[0]);
+			return (int)((value[0]) * 1000);
+		},
+		// Did I mention eclipse's handling of compile errors in lambda expressions is a pain in the ass?
+		() -> 
+		{
+			// We need to init this, so that fetchValue doesn't write nothing
+			// Why couldn't this stupd thing be done in one line??!? I DONT UNDERSTAND IT!
+			float[] value = new float[1];
+			SENSOR_2.fetchSample(value, 0);
+			// System.out.println("Right sensor value: " + value[0]);
+			return (int)((value[0]) * 1000);
+		}, 360, RelativeDirection.LEFT, .25f, () -> true);
+		
+		implementedTrackManager.getFoundTrackEvent().subscribe((trackArgs) -> System.out.println("Event was called!!!"));
+		
 		Behavior[] behaviours = new Behavior[] {
 			concurrentTaskManager,
-			TimedBehaviour.of(new ImplementedAdvancedFollowTrackBehaviour((value) -> value < 500, movementController, () -> 
-			{
-				// We need to init this, so that fetchValue doesn't write nothing
-				// Why couldn't this stupd thing be done in one line??!? I DONT UNDERSTAND IT!
-				float[] value = new float[1];
-				SENSOR_1.fetchSample(value, 0);
-				System.out.println("Left sensor value: " + value[0] * 1000);
-				return (int)((value[0]) * 1000);
-			},
-			// Did I mention eclipse's handling of compile errors in lambda expressions is a pain in the ass?
-			() -> 
-			{
-				// We need to init this, so that fetchValue doesn't write nothing
-				// Why couldn't this stupd thing be done in one line??!? I DONT UNDERSTAND IT!
-				float[] value = new float[1];
-				SENSOR_2.fetchSample(value, 0);
-				System.out.println("Right sensor value: " + value[0] * 1000);
-				return (int)((value[0]) * 1000);
-			}, 360, RelativeDirection.LEFT, .5f, () -> true), timeManager, 0, 20000)
+			TimedBehaviour.of(implementedTrackManager, timeManager, 0, 20000)
 		};
+		
 		
 		
 		
@@ -105,11 +114,27 @@ public class Main
 //		MOTOR_LEFT.stop();
 //		MOTOR_RIGHT.stop();
 			
+		/*
+		long time = System.currentTimeMillis();
 		
+		float lowest = 2000;
+		
+		while((System.currentTimeMillis() - time) < 10000)
+		{
+			float[] val = new float[1];
+			SENSOR_2.fetchSample(val, 0);
+			lowest = Math.min(val[0], lowest);
+		}
+		
+		System.out.println("The lowest is: " + lowest);
+		*/
+		
+		/*
 		Arbitrator arbitrator = new Arbitrator(behaviours, true);
 		arbitrator.go();
 		movementController.stop();
 		movementController.updateMotorState();
+		*/
 		System.out.println("BYE FROM MAIN");
 	}
 }

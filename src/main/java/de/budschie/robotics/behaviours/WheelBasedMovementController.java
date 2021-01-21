@@ -86,14 +86,14 @@ public class WheelBasedMovementController implements IAbstractMovementController
 			
 			if(driveDirection == RelativeDirection.FORWARD)
 			{
-				System.out.println("Forward");
+				// System.out.println("Forward");
 				motorLeft.forward();
 				motorRight.forward();
 			}
 			// Technically not necessary, but calling this as it makes all of this clearer
 			else if(driveDirection == RelativeDirection.BACKWARD)
 			{
-				System.out.println("Backward");
+				// System.out.println("Backward");
 				motorLeft.backward();
 				motorRight.backward();
 			}

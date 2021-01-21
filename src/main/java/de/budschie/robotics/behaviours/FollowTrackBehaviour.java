@@ -38,9 +38,7 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 	{
 		Optional<Float> leftCorrectionCalculated = getLeftCorrection();
 		Optional<Float> rightCorrectionCalculated = getRightCorrection();
-		
-		System.out.println("Executing track following...");
-		
+				
 		boolean edited = false;
 		
 		// We aren't right enough
