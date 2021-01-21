@@ -59,7 +59,7 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 	{
 		// Before you wonder WTF is going on here, please take a moment to grasp whats going on (essentially what's going on is that I am to lazy to copy above code, so I just make it worse
 		// Edit nvm I'm going to copy the code from above as it is more clear to what is going on (plz forgive me)
-		// Another edit hm fuck it I'm not going to copy the code
+		// Another edit hm **** it I'm not going to copy the code
 		// Alright this took a long time (1min) to get here, but what we are essentially doing is we "invert" the left correction value(empty gets correctionStrength and correctionStrength gets empty)
 		
 		// Btw this can be optimized, but then the code would look ugly etc.

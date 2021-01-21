@@ -47,7 +47,7 @@ public class Main
 		TaskManager concurrentTaskManager = new TaskManager(TaskExecutors.CONCURRENT_EXECUTOR);
 		
 		// This code looks terrible
-		// Eclipse is a shithole of a software. Why is the detection of compile errors in lambda expressions downright bad???
+		// Eclipse is a sh***ole of a software. Why is the detection of compile errors in lambda expressions downright bad???
 		ImplementedAdvancedFollowTrackBehaviour implementedTrackManager = new ImplementedAdvancedFollowTrackBehaviour((value) -> (value < 330), movementController, () -> 
 		{
 			// We need to init this, so that fetchValue doesn't write to nothing
@@ -56,7 +56,7 @@ public class Main
 			SENSOR_1.fetchSample(value, 0);
 			return (int)((value[0]) * 1000);
 		},
-		// Did I mention eclipse's handling of compile errors in lambda expressions is a pain in the ass?
+		// Did I mention eclipse's handling of compile errors in lambda expressions is a pain in the a**?
 		() -> 
 		{
 			float[] value = new float[1];
