@@ -31,23 +31,7 @@ public class Main
 		//System.out.println("Available modes: " + String.join(", ", SENSOR_1.getAvailableModes()));
 		long startingTime = System.currentTimeMillis();
 		
-		/*
-		Behavior[] behaviours = new Behavior[] { new FollowTrackBehaviour(() -> {
-			float[] value = new float[1];
-			SENSOR_1.fetchSample(value, 0);
-			System.out.println(value);
-			System.out.println("1: " + valdue[0]);
-			
-			return value[0] < 400 ? Optional.of(.5f) : Optional.empty();
-		}, () -> {
-			float[] value = new float[1];
-			SENSOR_2.fetchSample(value, 0);
-			System.out.println("2: " + value[0]);
-			
-			return value[0] < 400 ? Optional.of(.5f) : Optional.empty();
-		}, new WheelBasedMovementController(MOTOR_LEFT, MOTOR_RIGHT), 500, () -> (System.currentTimeMillis() - startingTime) < 8000)};
-		*/
-		
+
 		TimeManager timeManager = new TimeManager();
 		
 		// Maybe I should use the lejos pilot classes, but I don't know where to find them...
@@ -62,24 +46,21 @@ public class Main
 		
 		TaskManager concurrentTaskManager = new TaskManager(TaskExecutors.CONCURRENT_EXECUTOR);
 		
+		// This code looks terrible
 		// Eclipse is a shithole of a software. Why is the detection of compile errors in lambda expressions downright bad???
 		ImplementedAdvancedFollowTrackBehaviour implementedTrackManager = new ImplementedAdvancedFollowTrackBehaviour((value) -> (value < 330), movementController, () -> 
 		{
-			// We need to init this, so that fetchValue doesn't write nothing
-			// Why couldn't this stupd thing be done in one line??!? I DONT UNDERSTAND IT!
+			// We need to init this, so that fetchValue doesn't write to nothing
+			// Why couldn't this stupid thing be done in one line??!? I DONT UNDERSTAND IT!
 			float[] value = new float[1];
 			SENSOR_1.fetchSample(value, 0);
-			// System.out.println("Left sensor value: " + value[0]);
 			return (int)((value[0]) * 1000);
 		},
 		// Did I mention eclipse's handling of compile errors in lambda expressions is a pain in the ass?
 		() -> 
 		{
-			// We need to init this, so that fetchValue doesn't write nothing
-			// Why couldn't this stupd thing be done in one line??!? I DONT UNDERSTAND IT!
 			float[] value = new float[1];
 			SENSOR_2.fetchSample(value, 0);
-			// System.out.println("Right sensor value: " + value[0]);
 			return (int)((value[0]) * 1000);
 		}, 360, RelativeDirection.LEFT, .25f, () -> true);
 		
@@ -89,27 +70,10 @@ public class Main
 			concurrentTaskManager,
 			TimedBehaviour.of(implementedTrackManager, timeManager, 0, 20000)
 		};
-		
-		
-		
-		
-//		WheelBasedMovementController movementController = new WheelBasedMovementController(MOTOR_LEFT, MOTOR_RIGHT);
-//		movementController.turnLeft(1);
-//		movementController.setSpeed(500);
-//		movementController.updateMotorState();
-//		Delay.msDelay(8000);
-//		movementController.stop();
-//		movementController.updateMotorState();
-		
-		
-//		MOTOR_LEFT.setSpeed(1000);
-//		MOTOR_RIGHT.setSpeed(30);
-//		MOTOR_LEFT.backward();
-//		MOTOR_RIGHT.backward();
-//		Delay.msDelay(8000);
-//		MOTOR_LEFT.stop();
-//		MOTOR_RIGHT.stop();
 			
+		// This little program is used to determine the white and black values
+		// We can use Math.min for white and Math.max for black (to determine the brightest black value). Then we cross-check both values,
+		// so that they don't overlap
 		/*
 		long time = System.currentTimeMillis();
 		
@@ -125,12 +89,12 @@ public class Main
 		System.out.println("The lowest is: " + lowest);
 		*/
 		
-		/*
+		
 		Arbitrator arbitrator = new Arbitrator(behaviours, true);
 		arbitrator.go();
 		movementController.stop();
 		movementController.updateMotorState();
-		*/
-		System.out.println("BYE FROM MAIN");
+		
+		System.out.println("Exited.");
 	}
 }
