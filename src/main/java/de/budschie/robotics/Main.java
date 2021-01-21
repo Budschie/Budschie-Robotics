@@ -36,7 +36,7 @@ public class Main
 			float[] value = new float[1];
 			SENSOR_1.fetchSample(value, 0);
 			System.out.println(value);
-			System.out.println("1: " + value[0]);
+			System.out.println("1: " + valdue[0]);
 			
 			return value[0] < 400 ? Optional.of(.5f) : Optional.empty();
 		}, () -> {
