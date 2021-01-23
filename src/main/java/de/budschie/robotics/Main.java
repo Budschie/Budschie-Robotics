@@ -81,7 +81,40 @@ public class Main
 		
 		implementedTrackManager.getFoundTrackEvent().subscribe((trackArgs) -> System.out.println("Event was called!"));
 		
-		
+		// Slide
+		/*
+		sequentialTaskManager.addTask((taskManager) ->
+		{
+			int turnAmount = 880;
+			
+			movementController.backward();
+			movementController.turnRight(1);
+			movementController.setSpeed(360);
+			movementController.updateMotorState();
+			
+			ADDITIONAL_1.setSpeed(880);
+			ADDITIONAL_2.setSpeed(880);
+			
+			ADDITIONAL_1.rotate(-turnAmount, true);
+			ADDITIONAL_2.rotate(turnAmount, false);
+			
+			movementController.turnLeft(0);
+			movementController.forward();
+			movementController.updateMotorState();
+			Delay.msDelay(100);
+			
+			movementController.backward();
+			movementController.turnRight(1);
+			movementController.updateMotorState();
+			
+			Delay.msDelay(1000);
+			
+			movementController.stop();
+			movementController.updateMotorState();
+			
+			return true;
+		});
+		*/
 		
 		// Basketball
 		/*
