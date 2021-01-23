@@ -15,7 +15,6 @@ public class TimeManager
 	{
 		assertValid();
 		long currentElapsedTime = System.currentTimeMillis() - ms;
-		// System.out.println("Fetching current elapsed time: " + currentElapsedTime);
 		return currentElapsedTime;
 	}
 	

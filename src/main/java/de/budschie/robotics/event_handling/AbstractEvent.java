@@ -115,10 +115,5 @@ public abstract class AbstractEvent<E>
 	{
 		int methodId;
 		Consumer<E> method;
-		
-		private SubscriptionPair()
-		{
-			
-		}
 	}
 }

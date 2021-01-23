@@ -9,8 +9,14 @@ public class TaskExecutors
 	public static final BiConsumer<TaskManager, SafeReadWriteAccess<ITask>> SEQUENTIAL_EXECUTOR = (thisReference, tasks) ->
 	{
 		// We don't need processing here
-		ITask currentTask = tasks.getMainElements().get(0);
-		currentTask.execute(thisReference);
+		if(tasks.getMainElements().size() > 0)
+		{
+			ITask currentTask = tasks.getMainElements().get(0);
+			boolean shouldRemove = currentTask.execute(thisReference);
+			
+			if(shouldRemove)
+				tasks.remove(currentTask);
+		}
 	};
 	
 	public static final BiConsumer<TaskManager, SafeReadWriteAccess<ITask>> CONCURRENT_EXECUTOR = (thisReference, tasks) ->
@@ -19,7 +25,11 @@ public class TaskExecutors
 		tasks.setCurrentlyReading(true);
 		
 		for(ITask task : tasks.getMainElements())
-			task.execute(thisReference);
+		{
+			boolean shouldRemove = task.execute(thisReference);
+			if(shouldRemove)
+				tasks.remove(task);
+		}
 		
 		tasks.setCurrentlyReading(false);
 		tasks.process();

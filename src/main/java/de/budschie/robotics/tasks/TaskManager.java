@@ -15,6 +15,7 @@ public class TaskManager implements Behavior
 	public TaskManager(BiConsumer<TaskManager, SafeReadWriteAccess<ITask>> taskExecutor)
 	{
 		this.tasks = new SafeReadWriteAccess<>();
+		this.taskExecutor = taskExecutor;
 	}
 	
 	public TaskManager(BiConsumer<TaskManager, SafeReadWriteAccess<ITask>> taskExecutor, ArrayList<ITask> tasks)

@@ -11,6 +11,9 @@ public interface IAbstractMovementController
 	/** This temporarily stops the movement, but preserves the speed when activated again. **/
 	void stop();
 	
+	/** This temporarily flt-stops the movement, but preserves the speed when activated again. **/
+	void fltStop();
+	
 	/** The amount should be implemented as a percentage decrease of the other motor**/
 	void turnLeft(float amount);
 	

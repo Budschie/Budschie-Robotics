@@ -43,6 +43,12 @@ public class WheelBasedMovementController implements IAbstractMovementController
 	{
 		driveDirection = RelativeDirection.STOP;
 	}
+	
+	@Override
+	public void fltStop()
+	{
+		driveDirection = RelativeDirection.FLT;
+	}
 
 	@Override
 	public void turnLeft(float percentage)
@@ -65,6 +71,11 @@ public class WheelBasedMovementController implements IAbstractMovementController
 		{
 			motorLeft.stop();
 			motorRight.stop();
+		}
+		else if(driveDirection == RelativeDirection.FLT)
+		{
+			motorLeft.flt();
+			motorRight.flt();
 		}
 		else
 		{

@@ -46,7 +46,7 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 		{
 			// Go right
 			movementController.turnRight(leftCorrectionCalculated.get());
-			System.out.printf("We're not right enough by %f.%n", leftCorrectionCalculated.get());
+			// System.out.printf("We're not right enough by %f.%n", leftCorrectionCalculated.get());
 			edited = true;
 			turnLeftFlag = false;
 		}
@@ -55,7 +55,7 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 		{
 			// Go left
 			movementController.turnLeft(rightCorrectionCalculated.get());
-			System.out.printf("We're not left enough by %f.%n", rightCorrectionCalculated.get());
+			// System.out.printf("We're not left enough by %f.%n", rightCorrectionCalculated.get());
 			edited = true;
 			turnLeftFlag = false;
 		}
