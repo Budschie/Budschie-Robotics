@@ -1,4 +1,4 @@
-package de.budschie.robotics.util;
+package de.budschie.robotics.utils;
 
 import java.util.ArrayList;
 
@@ -35,6 +35,8 @@ public class SafeReadWriteAccess<E>
 			addingQueue.add(element);
 		else
 			mainElements.add(element);
+		
+		System.out.println("Added "+ element);
 	}
 	
 	public void remove(E element)
@@ -43,6 +45,8 @@ public class SafeReadWriteAccess<E>
 			removalQueue.add(element);
 		else
 			mainElements.remove(element);
+		
+		System.out.println("Removed " + element);
 	}
 	
 	public void process()

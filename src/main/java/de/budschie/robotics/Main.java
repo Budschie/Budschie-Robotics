@@ -88,7 +88,7 @@ public class Main
 			float[] val = new float[1];
 			SENSOR_2.fetchSample(val, 0);
 			return (int)((val[0]));
-		}, 100, RelativeDirection.LEFT, .25f, () -> true);
+		}, 100, 2000, 1f, RelativeDirection.LEFT, .25f, () -> true);
 		
 		ITask waitForButtonPress = (taskManager) ->
 		{
@@ -206,6 +206,7 @@ public class Main
 		
 		ITask stickpush = (taskManager) ->
 		{
+			System.out.println("Starting StickPush...");
 			movementController.setSpeed(900);
 			
 			for(int i = 0; i < 17; i++)
@@ -218,6 +219,7 @@ public class Main
 				Delay.msDelay(100);
 			}
 			
+			System.out.println("Finished StickPush...");
 			return true;
 		};
 		
@@ -235,18 +237,22 @@ public class Main
 		
 		implementedTrackManager.setCurrentDirection(RelativeDirection.BACKWARD);
 		
+		/*
 		sequentialTaskManager.addTask((taskManager) ->
 		{
+			System.out.println("Started driving forward...");
 			movementController.forward();
-			movementController.setSpeed(1000);
+			movementController.setSpeed(600);
 			movementController.updateMotorState();
 			Delay.msDelay(2000);
 			movementController.stop();
 			movementController.updateMotorState();
+			System.out.println("Finished driving forward.");
 			return true;
 		});
 		
 		sequentialTaskManager.addTask(stickpush);
+		*/
 		
 		/*
 		sequentialTaskManager.addTask((taskManager) ->
@@ -353,8 +359,8 @@ public class Main
 		// Basketball
 		
 		Behavior[] behaviours = new Behavior[] {
-			concurrentTaskManager, sequentialTaskManager
-			//TimedBehaviour.of(implementedTrackManager, timeManager, 0, 20000)
+			concurrentTaskManager, sequentialTaskManager,
+			TimedBehaviour.of(implementedTrackManager, timeManager, 0, 20000)
 		};
 		
 			

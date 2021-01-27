@@ -111,8 +111,8 @@ task deploy {
                 put from: file('build/libs/' + project.name + '-' + project.version + '.jar'), into: '/home/robot/' + project.name
 
                 // This may be a bit dirty, but cmon, I am a noob
-                // execute 'echo "java -cp ' + project.name + '-' + project.version + '.jar:/home/robot/java/libraries/*:/home/robot/java/loglibs/* de.budschie.robotics.Main > latest.log" > ' + project.name + '/run.sh'
-                execute 'echo java -cp "' + project.name + '-' + project.version + '.jar:/home/robot/java/libraries/*:/home/robot/java/loglibs/* de.budschie.robotics.Main" > ' + project.name + '/run.sh'
+                 execute 'echo "java -cp ' + project.name + '-' + project.version + '.jar:/home/robot/java/libraries/*:/home/robot/java/loglibs/* de.budschie.robotics.Main > latest.log" > ' + project.name + '/run.sh'
+                // execute 'echo java -cp "' + project.name + '-' + project.version + '.jar:/home/robot/java/libraries/*:/home/robot/java/loglibs/* de.budschie.robotics.Main" > ' + project.name + '/run.sh'
                 // We couldn't execute this file before, but with this, we grant ourselves full rights on this file
                 execute 'chmod u+rwx ' + project.name + '/run.sh'
             // execute 'echo java -jar compiledJars/' + roject.name + '-' + project.version + '.jar > run' + project.name + project.version

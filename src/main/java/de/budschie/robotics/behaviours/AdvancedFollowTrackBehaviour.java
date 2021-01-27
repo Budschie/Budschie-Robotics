@@ -5,7 +5,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import de.budschie.robotics.event_handling.TrackEvent;
-import de.budschie.robotics.event_handling.FoundTrackEventArgs;
+import de.budschie.robotics.event_handling.TrackEventArgs;
 import lejos.robotics.subsumption.Behavior;
 
 public class AdvancedFollowTrackBehaviour extends FollowTrackBehaviour
@@ -58,6 +58,21 @@ public class AdvancedFollowTrackBehaviour extends FollowTrackBehaviour
 		return foundTrackRight.get();
 	}
 	
+	protected void onUpdateTrack(TrackEventArgs args)
+	{
+		updateTrackEvent.fire(args);
+	}
+	
+	protected void onFoundTrack(TrackEventArgs args)
+	{
+		foundTrackEvent.fire(args);
+	}
+	
+	protected void onLostTrack(TrackEventArgs args)
+	{
+		lostTrackEvent.fire(args);
+	}
+	
 	@Override
 	public void action()
 	{		
@@ -67,14 +82,14 @@ public class AdvancedFollowTrackBehaviour extends FollowTrackBehaviour
 		
 		if(hasFoundTrackLeft || foundLeftTrackLastFrame)
 		{
-			FoundTrackEventArgs args = new FoundTrackEventArgs(RelativeDirection.LEFT); 
+			TrackEventArgs args = new TrackEventArgs(RelativeDirection.LEFT); 
 			
 			if(hasFoundTrackLeft && foundLeftTrackLastFrame)
-				updateTrackEvent.fire(args);
+				onUpdateTrack(args);
 			else if(!hasFoundTrackLeft && foundLeftTrackLastFrame)
-				lostTrackEvent.fire(args);
+				onLostTrack(args);
 			else if(hasFoundTrackLeft && !foundLeftTrackLastFrame)
-				foundTrackEvent.fire(args);
+				onFoundTrack(args);
 			
 			movementCanceled |= args.isMovementCanceled();
 			foundLeftTrackLastFrame = hasFoundTrackLeft;
@@ -83,14 +98,14 @@ public class AdvancedFollowTrackBehaviour extends FollowTrackBehaviour
 		
 		if(hasFoundTrackRight || foundRightTrackLastFrame)
 		{
-			FoundTrackEventArgs args = new FoundTrackEventArgs(RelativeDirection.RIGHT); 
+			TrackEventArgs args = new TrackEventArgs(RelativeDirection.RIGHT); 
 
 			if(hasFoundTrackRight && foundRightTrackLastFrame)
-				updateTrackEvent.fire(args);
+				onUpdateTrack(args);
 			else if(!hasFoundTrackRight && foundRightTrackLastFrame)
-				lostTrackEvent.fire(args);
+				onLostTrack(args);
 			else if(hasFoundTrackRight && !foundRightTrackLastFrame)
-				foundTrackEvent.fire(args);
+				onFoundTrack(args);
 			
 			movementCanceled |= args.isMovementCanceled();
 			foundRightTrackLastFrame = hasFoundTrackRight;

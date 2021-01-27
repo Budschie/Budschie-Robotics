@@ -40,6 +40,26 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 	{
 		Optional<Float> leftCorrectionCalculated = getLeftCorrection();
 		Optional<Float> rightCorrectionCalculated = getRightCorrection();
+		
+		Optional<Float> bias = getBias();
+		
+		if(bias.isPresent())
+		{
+			float biasValue = bias.get();
+			
+			if(biasValue < 0)
+			{
+				rightCorrectionCalculated = Optional.of(Math.min(Math.max(rightCorrectionCalculated.orElse(0f) - biasValue, 0), 1));
+				leftCorrectionCalculated = Optional.of(Math.min(Math.max(leftCorrectionCalculated.orElse(0f) + biasValue, 0), 1));
+			}
+			else
+			{
+				rightCorrectionCalculated = Optional.of(Math.min(Math.max(rightCorrectionCalculated.orElse(0f) + biasValue, 0), 1));
+				leftCorrectionCalculated = Optional.of(Math.min(Math.max(leftCorrectionCalculated.orElse(0f) - biasValue, 0), 1));
+			}
+			
+			System.out.println("Currently applying bias of " + bias + ".");
+		}
 				
 		boolean edited = false;
 		
@@ -110,6 +130,12 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 	public Optional<Float> getRightCorrection()
 	{
 		return rightCorrection.get();
+	}
+	
+	/** Negative values should cause this to call turnRight, positive values should turn this thing left. **/
+	public Optional<Float> getBias()
+	{
+		return Optional.empty();
 	}
 	
 	/** Ignoring the setting of a flag because action should exit pretty quickly. 

@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import de.budschie.robotics.Main;
+import de.budschie.robotics.utils.MathUtils;
 
 // OK?
 public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrackBehaviour
@@ -17,9 +18,13 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 	private Predicate<Integer> isBlack;
 	private Supplier<Integer> valueLeft, valueRight;
 	private float correctionStrength;
+	private boolean hasChangedTimeSinceLeft, hasChangedTimeSinceRight;
+	private long timeSinceLeft, timeSinceRight;
+	private long timeAfterFullBias;
+	private float fullBias;
 	
 	public ImplementedAdvancedFollowTrackBehaviour(Predicate<Integer> isBlack, IAbstractMovementController movementController,
-			Supplier<Integer> valueLeft, Supplier<Integer> valueRight, int speed, RelativeDirection currentTrackDetection, float correctionStrength,
+			Supplier<Integer> valueLeft, Supplier<Integer> valueRight, int speed, long timeAfterFullBias, float fullBias, RelativeDirection currentTrackDetection, float correctionStrength,
 			Supplier<Boolean> shouldTakeControllOverrider)
 	{
 		// We can internally use null here, as we can override these methods below
@@ -29,6 +34,8 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 		this.valueRight = valueRight;
 		this.correctionStrength = correctionStrength;
 		this.isBlack = isBlack;
+		this.timeAfterFullBias = timeAfterFullBias;
+		this.fullBias = fullBias;
 	}
 	
 	@Override
@@ -43,6 +50,13 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 			if(isTestedAsBlack)
 			{
 				Main.LEFT.setPattern(2);
+				
+				if(!hasChangedTimeSinceLeft)
+				{
+					timeSinceLeft = System.currentTimeMillis();
+					hasChangedTimeSinceLeft = true;
+				}
+				
 				return Optional.of(correctionStrength);
 			}
 		}
@@ -55,12 +69,20 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 			if(isTestedAsBlack)
 			{
 				Main.LEFT.setPattern(2);
+				
+				if(!hasChangedTimeSinceLeft)
+				{
+					timeSinceLeft = System.currentTimeMillis();
+					hasChangedTimeSinceLeft = true;
+				}
+				
 				return Optional.of(correctionStrength);
 			}
 		}
 		
 		Main.LEFT.setPattern(1);
-		
+		hasChangedTimeSinceLeft = false;
+		timeSinceLeft = 0;
 		return Optional.empty();
 	}
 	
@@ -76,11 +98,40 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 		Optional<Float> leftCorrection = getLeftCorrection();
 		
 		if(leftCorrection.isPresent())
+		{
+			hasChangedTimeSinceRight = false;
+			timeSinceRight = 0;
 			Main.RIGHT.setPattern(1);
+		}
 		else
+		{
 			Main.RIGHT.setPattern(2);
+			
+			if(!hasChangedTimeSinceRight)
+			{
+				timeSinceRight = System.currentTimeMillis();
+				hasChangedTimeSinceRight = true;
+			}
+		}
 		
 		return leftCorrection.isPresent() ? Optional.empty() : Optional.of(correctionStrength);
+	}
+	
+	@Override
+	public Optional<Float> getBias()
+	{
+		if(timeSinceLeft != 0)
+		{
+			return Optional.of(MathUtils.linearInterpolation(0, fullBias, Math.min(((float)System.currentTimeMillis() - timeSinceLeft) / (timeAfterFullBias), 1)));
+		}
+		else if(timeSinceRight != 0)
+		{
+			System.out.println("Current time is " + (System.currentTimeMillis() - timeSinceRight));
+			System.out.println("Current time after full bias is " + timeAfterFullBias);
+			return Optional.of(MathUtils.linearInterpolation(0, -fullBias, Math.min(((float)(System.currentTimeMillis() - timeSinceRight)) / ((float)(timeAfterFullBias)), 1)));
+		}
+		
+		return Optional.empty();
 	}
 	
 	@Override

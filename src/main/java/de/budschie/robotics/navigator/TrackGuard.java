@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import de.budschie.robotics.behaviours.AdvancedFollowTrackBehaviour;
-import de.budschie.robotics.event_handling.FoundTrackEventArgs;
+import de.budschie.robotics.event_handling.TrackEventArgs;
 
 public class TrackGuard
 {
@@ -30,7 +30,7 @@ public class TrackGuard
 		}
 	}
 	
-	private void onDetectedTrack(FoundTrackEventArgs args)
+	private void onDetectedTrack(TrackEventArgs args)
 	{
 		// Not feeling about doing something fancy with preIncrement today...
 		internalTrackCounter++;
@@ -48,7 +48,7 @@ public class TrackGuard
 		AdvancedFollowTrackBehaviour advancedFollowTrackBehaviour;
 		
 		/** The given runnable will be called when the given amount of tracks was located. The, the track count will be resetted. **/
-		public Builder addTrackExecutor(Consumer<FoundTrackEventArgs> trackExecutor, int trackAmount)
+		public Builder addTrackExecutor(Consumer<TrackEventArgs> trackExecutor, int trackAmount)
 		{
 			TrackPair pair = new TrackPair();
 			pair.consumer = trackExecutor;
@@ -73,7 +73,7 @@ public class TrackGuard
 	
 	private static class TrackPair
 	{
-		Consumer<FoundTrackEventArgs> consumer;
+		Consumer<TrackEventArgs> consumer;
 		int tracksDetected;
 	}
 }

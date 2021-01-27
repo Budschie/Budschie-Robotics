@@ -3,7 +3,7 @@ package de.budschie.robotics.tasks;
 import java.util.ArrayList;
 import java.util.function.BiConsumer;
 
-import de.budschie.robotics.util.SafeReadWriteAccess;
+import de.budschie.robotics.utils.SafeReadWriteAccess;
 import lejos.robotics.subsumption.Behavior;
 
 public class TaskManager implements Behavior
@@ -36,6 +36,7 @@ public class TaskManager implements Behavior
 	
 	public boolean isHalted()
 	{
+		System.out.println("Was halted.");
 		return halted;
 	}
 	

@@ -2,7 +2,7 @@ package de.budschie.robotics.tasks;
 
 import java.util.function.BiConsumer;
 
-import de.budschie.robotics.util.SafeReadWriteAccess;
+import de.budschie.robotics.utils.SafeReadWriteAccess;
 
 public class TaskExecutors
 {
