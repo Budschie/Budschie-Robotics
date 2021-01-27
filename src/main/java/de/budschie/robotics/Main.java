@@ -1,24 +1,16 @@
 package de.budschie.robotics;
 
 import de.budschie.robotics.behaviours.ImplementedAdvancedFollowTrackBehaviour;
-import de.budschie.robotics.behaviours.RelativeDirection;
-import de.budschie.robotics.behaviours.TimedBehaviour;
 import de.budschie.robotics.behaviours.WheelBasedMovementController;
-import de.budschie.robotics.navigator.TrackGuard;
 import de.budschie.robotics.profiling.Profiler;
-import de.budschie.robotics.tasks.ITask;
 import de.budschie.robotics.tasks.TaskExecutors;
 import de.budschie.robotics.tasks.TaskManager;
 import de.budschie.robotics.time.TimeManager;
 import ev3dev.actuators.ev3.EV3Led;
 import ev3dev.actuators.lego.motors.NXTRegulatedMotor;
-import ev3dev.sensors.Button;
 import ev3dev.sensors.ev3.EV3ColorSensor;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.SensorPort;
-import lejos.robotics.subsumption.Arbitrator;
-import lejos.robotics.subsumption.Behavior;
-import lejos.utility.Delay;
 
 public class Main
 {
@@ -39,15 +31,40 @@ public class Main
 
 	public static void main(String[] args)
 	{		
+		
+		
 		// ZEIT: 2 min 30 sek
 		
 		// REIHENFOLGE: Von Homezone -> Innovatives Projekt(Schieben) von Baum auf Replay Logo ->
 		// Schieber -> Tunnel -> Homezone (Transportaufsatz) -> Direkt zum Rahmen (ohne die Linien) -> hin und zurück -> Homezone (Turm Aufsatz) -> Basketballkorb -> Bank -> Rutsche -> Gewichtheben -> Robodance
 		
 		//System.out.println("Available modes: " + String.join(", ", SENSOR_1.getAvailableModes()));
-		long startingTime = System.currentTimeMillis();
-
 		TimeManager timeManager = new TimeManager();
+		timeManager.start();
+		Profiler.start();
+		
+		// SENSOR_1.switchMode("REFLECT", 0);
+		// SENSOR_2.switchMode("REFLECT", 0);
+		
+		System.out.println("Starting SUPER SAMPLER (DUN DUN DUUUUUN)");
+		
+		
+		while(timeManager.getElapsedTime() < 60000)
+		{
+			float[] val = new float[1];
+			SENSOR_1.fetchSample(val, 0);
+			int yeet = (int) val[0];
+			
+			float[] val2 = new float[1];
+			SENSOR_2.fetchSample(val2, 0);
+			int yeet2 = (int)((val2[0]));
+			
+			Profiler.addRefresh();
+		}
+		
+		Profiler.stop();
+		
+		//System.out.println("We were able to sample both sensors " + amount + "times in 60000 seconds.");
 		
 		// Maybe I should use the lejos pilot classes, but I don't know where to find them...
 		// Which is a bit unfortunate...
@@ -88,7 +105,7 @@ public class Main
 			float[] val = new float[1];
 			SENSOR_2.fetchSample(val, 0);
 			return (int)((val[0]));
-		}, 100, 2000, 1f, RelativeDirection.LEFT, .25f, () -> true);
+		}, 250, 600, .75f, RelativeDirection.RIGHT, .5f, () -> true);
 		
 		ITask waitForButtonPress = (taskManager) ->
 		{
@@ -237,6 +254,43 @@ public class Main
 		
 		implementedTrackManager.setCurrentDirection(RelativeDirection.BACKWARD);
 		
+		sequentialTaskManager.addTask((taskManager) ->
+		{
+			return true;
+		});
+		
+		TrackGuard trackGuard = new TrackGuard.Builder().setAdvancedFollowTrackBehaviour(implementedTrackManager)
+				.addTrackExecutor((trackArgs) ->
+				{
+					sequentialTaskManager.addTask((taskManager) ->
+					{
+						movementController.forward();
+						movementController.setSpeed(600);
+						movementController.turnRight(1);
+						movementController.updateMotorState();
+						Delay.msDelay(600);
+						movementController.turnRight(0);
+						movementController.updateMotorState();
+						Delay.msDelay(400);
+						
+						// Insert push thing here
+						
+						// Undo
+						
+						movementController.backward();
+						movementController.updateMotorState();
+						Delay.msDelay(400);
+						movementController.backward();
+						movementController.turnRight(1);
+						movementController.updateMotorState();
+						Delay.msDelay(600);
+						
+						return true;
+					});
+				}, 0).build();
+		
+		
+		
 		/*
 		sequentialTaskManager.addTask((taskManager) ->
 		{
@@ -360,7 +414,7 @@ public class Main
 		
 		Behavior[] behaviours = new Behavior[] {
 			concurrentTaskManager, sequentialTaskManager,
-			TimedBehaviour.of(implementedTrackManager, timeManager, 0, 20000)
+			TimedBehaviour.of(implementedTrackManager, timeManager, 0, 150000)
 		};
 		
 			
@@ -388,6 +442,7 @@ public class Main
 		
 		// Note on performance: We have only 3 checks per second, which is very bad... 2.905259011227103 2.9798251184602607 
 		Profiler.start();
+		timeManager.start();
 		Arbitrator arbitrator = new Arbitrator(behaviours, true);
 		arbitrator.go();
 		movementController.stop();
@@ -395,7 +450,9 @@ public class Main
 		Profiler.stop();
 		
 		RIGHT.setPattern(1);
-		LEFT.setPattern(2);
+		LEFT.setPattern(1);
+		
+		System.out.println("Elapsed time is " + timeManager.getElapsedTime());
 		
 		System.out.println("Exited.");
 	}

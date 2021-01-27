@@ -21,6 +21,6 @@ public class Profiler
 	public static void stop()
 	{
 		long elapsedTime = timeManager.getElapsedTime();
-		System.out.println("We have " + (((double)(refresh))/(elapsedTime/1000d)) + " elapses per second on average.");
+		System.out.println("We have " + (((double)(refresh))/(elapsedTime/1000d)) + " elapses per second on average, or, " + refresh + " refreshes.");
 	}
 }

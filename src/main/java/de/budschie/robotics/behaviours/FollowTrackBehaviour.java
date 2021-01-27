@@ -43,22 +43,34 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 		
 		Optional<Float> bias = getBias();
 		
+		// Somehow we don't end up removing the others strength
 		if(bias.isPresent())
 		{
 			float biasValue = bias.get();
 			
-			if(biasValue < 0)
-			{
-				rightCorrectionCalculated = Optional.of(Math.min(Math.max(rightCorrectionCalculated.orElse(0f) - biasValue, 0), 1));
-				leftCorrectionCalculated = Optional.of(Math.min(Math.max(leftCorrectionCalculated.orElse(0f) + biasValue, 0), 1));
-			}
-			else
-			{
-				rightCorrectionCalculated = Optional.of(Math.min(Math.max(rightCorrectionCalculated.orElse(0f) + biasValue, 0), 1));
-				leftCorrectionCalculated = Optional.of(Math.min(Math.max(leftCorrectionCalculated.orElse(0f) - biasValue, 0), 1));
-			}
+			 //System.out.println("LeftCorrection: " + leftCorrectionCalculated.orElse(0f) + "; RightCorrection: " + rightCorrectionCalculated.orElse(0f));
 			
-			System.out.println("Currently applying bias of " + bias + ".");
+
+			rightCorrectionCalculated = Optional.of(Math.min(Math.max(rightCorrectionCalculated.orElse(0f) + biasValue, 0), 1));
+			leftCorrectionCalculated = Optional.of(Math.min(Math.max(leftCorrectionCalculated.orElse(0f) - biasValue, 0), 1));
+						 
+			 float rightCorrection = rightCorrectionCalculated.get();
+			 float leftCorrection = leftCorrectionCalculated.get();
+			 
+			 if(rightCorrection > leftCorrection)
+			 {
+				 rightCorrectionCalculated = Optional.of(rightCorrection - leftCorrection);
+				 leftCorrectionCalculated = Optional.empty();
+			 }
+			 else
+			 {
+				 rightCorrectionCalculated = Optional.empty();
+				 leftCorrectionCalculated = Optional.of(leftCorrection - rightCorrection);
+			 }
+		
+			
+			 //System.out.println("Currently applying bias of " + bias + ".");
+			 //System.out.println("AFTER LeftCorrection: " + leftCorrectionCalculated.orElse(0f) + "; RightCorrection: " + rightCorrectionCalculated.orElse(0f));
 		}
 				
 		boolean edited = false;
@@ -71,6 +83,9 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 				movementController.turnRight(leftCorrectionCalculated.get());
 			else
 				movementController.turnLeft(leftCorrectionCalculated.get());
+			
+			movementController.updateMotorState();
+			
 			// System.out.printf("We're not right enough by %f.%n", leftCorrectionCalculated.get());
 			edited = true;
 			turnLeftFlag = false;
@@ -84,6 +99,8 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 			else
 				movementController.turnRight(rightCorrectionCalculated.get());
 			
+			movementController.updateMotorState();
+			
 			// System.out.printf("We're not left enough by %f.%n", rightCorrectionCalculated.get());
 			edited = true;
 			turnLeftFlag = false;
@@ -92,8 +109,8 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 		{
 			if(!turnLeftFlag)
 			{
-				System.out.println("Reset");
-				movementController.turnLeft(0);
+				// System.out.println("Reset");
+				//movementController.turnLeft(0);
 				edited = true;
 				turnLeftFlag = true;
 			}
@@ -143,6 +160,6 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 	@Override
 	public void suppress()
 	{
-		System.out.println("SUPPRESSING");
+		// System.out.println("SUPPRESSING");
 	}
 }

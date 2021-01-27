@@ -21,7 +21,13 @@ public class TimedBehaviour implements Behavior
 	@Override
 	public boolean takeControl()
 	{
-		return timePredicate.test(timeManager) && behaviour.takeControl();
+		boolean timePredicate = this.timePredicate.test(timeManager);
+		boolean takeControl = behaviour.takeControl();
+		
+		// System.out.println("TimePredicate is " + timePredicate);
+		// System.out.println("TakeControl is " + takeControl);
+		
+		return timePredicate && takeControl;
 	}
 
 	@Override
@@ -41,6 +47,7 @@ public class TimedBehaviour implements Behavior
 		return new TimedBehaviour(behaviour, timeManager, (time) ->
 		{
 			long elapsedTime = time.getElapsedTime();
+			//System.out.println("Currently elapsed time: " + elapsedTime + "; lower " + lower + "; greater " + greater);
 			return elapsedTime > lower && elapsedTime < greater;
 		});
 	}

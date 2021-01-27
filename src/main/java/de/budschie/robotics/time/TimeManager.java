@@ -7,6 +7,7 @@ public class TimeManager
 	
 	public void start()
 	{
+		// System.out.println("Starting time manager " + this);
 		hasStarted = true;
 		ms = System.currentTimeMillis();
 	}

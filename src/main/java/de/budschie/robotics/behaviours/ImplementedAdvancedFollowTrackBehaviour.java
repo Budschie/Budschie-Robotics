@@ -19,7 +19,7 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 	private Supplier<Integer> valueLeft, valueRight;
 	private float correctionStrength;
 	private boolean hasChangedTimeSinceLeft, hasChangedTimeSinceRight;
-	private long timeSinceLeft, timeSinceRight;
+	private long timeSinceNotLeft, timeSinceNotRight;
 	private long timeAfterFullBias;
 	private float fullBias;
 	
@@ -53,7 +53,7 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 				
 				if(!hasChangedTimeSinceLeft)
 				{
-					timeSinceLeft = System.currentTimeMillis();
+					timeSinceNotLeft = System.currentTimeMillis();
 					hasChangedTimeSinceLeft = true;
 				}
 				
@@ -72,7 +72,7 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 				
 				if(!hasChangedTimeSinceLeft)
 				{
-					timeSinceLeft = System.currentTimeMillis();
+					timeSinceNotLeft = System.currentTimeMillis();
 					hasChangedTimeSinceLeft = true;
 				}
 				
@@ -82,7 +82,7 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 		
 		Main.LEFT.setPattern(1);
 		hasChangedTimeSinceLeft = false;
-		timeSinceLeft = 0;
+		timeSinceNotLeft = 0;
 		return Optional.empty();
 	}
 	
@@ -100,7 +100,7 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 		if(leftCorrection.isPresent())
 		{
 			hasChangedTimeSinceRight = false;
-			timeSinceRight = 0;
+			timeSinceNotRight = 0;
 			Main.RIGHT.setPattern(1);
 		}
 		else
@@ -109,7 +109,7 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 			
 			if(!hasChangedTimeSinceRight)
 			{
-				timeSinceRight = System.currentTimeMillis();
+				timeSinceNotRight = System.currentTimeMillis();
 				hasChangedTimeSinceRight = true;
 			}
 		}
@@ -120,15 +120,15 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 	@Override
 	public Optional<Float> getBias()
 	{
-		if(timeSinceLeft != 0)
+		if(timeSinceNotLeft != 0)
 		{
-			return Optional.of(MathUtils.linearInterpolation(0, fullBias, Math.min(((float)System.currentTimeMillis() - timeSinceLeft) / (timeAfterFullBias), 1)));
+			return Optional.of(MathUtils.linearInterpolation(0, fullBias, Math.min(((float)(System.currentTimeMillis() - timeSinceNotLeft)) / ((float)(timeAfterFullBias)), 1)));
 		}
-		else if(timeSinceRight != 0)
+		else if(timeSinceNotRight != 0)
 		{
-			System.out.println("Current time is " + (System.currentTimeMillis() - timeSinceRight));
-			System.out.println("Current time after full bias is " + timeAfterFullBias);
-			return Optional.of(MathUtils.linearInterpolation(0, -fullBias, Math.min(((float)(System.currentTimeMillis() - timeSinceRight)) / ((float)(timeAfterFullBias)), 1)));
+			// System.out.println("Current time is " + (System.currentTimeMillis() - timeSinceNotRight));
+			// System.out.println("Current time after full bias is " + timeAfterFullBias);
+			return Optional.of(MathUtils.linearInterpolation(0, -fullBias, Math.min(((float)(System.currentTimeMillis() - timeSinceNotRight)) / ((float)(timeAfterFullBias)), 1)));
 		}
 		
 		return Optional.empty();
