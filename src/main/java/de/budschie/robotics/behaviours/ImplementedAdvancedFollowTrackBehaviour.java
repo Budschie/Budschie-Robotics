@@ -4,9 +4,11 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import de.budschie.robotics.Main;
+
 // OK?
 public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrackBehaviour
-{
+{	
 	//TODO: Make this safe to set the path
 	
 	/** This indicates whether we use the right sensor to look after new tracks({@link RelativeDirection.RIGHT} or the left sensor({@link RelativeDirection.LEFT}. **/
@@ -36,20 +38,28 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 		if(currentTrackDetection == RelativeDirection.LEFT)
 		{
 			// lol
-			boolean isTestedAsBlack = isBlack.test(valueRight.get());
+			boolean isTestedAsBlack = isBlack.test(currentDirection == RelativeDirection.FORWARD ? valueRight.get() : valueLeft.get());
 			
 			if(isTestedAsBlack)
+			{
+				Main.LEFT.setPattern(2);
 				return Optional.of(correctionStrength);
+			}
 		}
 		// We are doing this because it is much more clear
 		else if(currentTrackDetection == RelativeDirection.RIGHT)
 		{
 			// Tbh this code looks very similar to the code above, we should maybe avoid this
-			boolean isTestedAsBlack = isBlack.test(valueLeft.get());
+			boolean isTestedAsBlack = isBlack.test(currentDirection == RelativeDirection.FORWARD ? valueLeft.get() : valueRight.get());
 			
 			if(isTestedAsBlack)
+			{
+				Main.LEFT.setPattern(2);
 				return Optional.of(correctionStrength);
+			}
 		}
+		
+		Main.LEFT.setPattern(1);
 		
 		return Optional.empty();
 	}
@@ -64,6 +74,11 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 		
 		// Btw this can be optimized, but then the code would look ugly etc.
 		Optional<Float> leftCorrection = getLeftCorrection();
+		
+		if(leftCorrection.isPresent())
+			Main.RIGHT.setPattern(1);
+		else
+			Main.RIGHT.setPattern(2);
 		
 		return leftCorrection.isPresent() ? Optional.empty() : Optional.of(correctionStrength);
 	}

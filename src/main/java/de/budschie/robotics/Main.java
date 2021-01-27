@@ -2,11 +2,17 @@ package de.budschie.robotics;
 
 import de.budschie.robotics.behaviours.ImplementedAdvancedFollowTrackBehaviour;
 import de.budschie.robotics.behaviours.RelativeDirection;
+import de.budschie.robotics.behaviours.TimedBehaviour;
 import de.budschie.robotics.behaviours.WheelBasedMovementController;
+import de.budschie.robotics.navigator.TrackGuard;
+import de.budschie.robotics.profiling.Profiler;
+import de.budschie.robotics.tasks.ITask;
 import de.budschie.robotics.tasks.TaskExecutors;
 import de.budschie.robotics.tasks.TaskManager;
 import de.budschie.robotics.time.TimeManager;
+import ev3dev.actuators.ev3.EV3Led;
 import ev3dev.actuators.lego.motors.NXTRegulatedMotor;
+import ev3dev.sensors.Button;
 import ev3dev.sensors.ev3.EV3ColorSensor;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.SensorPort;
@@ -16,6 +22,9 @@ import lejos.utility.Delay;
 
 public class Main
 {
+	public static final EV3Led RIGHT = new EV3Led(EV3Led.RIGHT);
+	public static final EV3Led LEFT = new EV3Led(EV3Led.LEFT);
+	
 	// Left; In driving dir
 	public static final EV3ColorSensor SENSOR_1 = new EV3ColorSensor(SensorPort.S4);
 	// Right
@@ -37,7 +46,6 @@ public class Main
 		
 		//System.out.println("Available modes: " + String.join(", ", SENSOR_1.getAvailableModes()));
 		long startingTime = System.currentTimeMillis();
-		
 
 		TimeManager timeManager = new TimeManager();
 		
@@ -70,7 +78,7 @@ public class Main
 			// We need to init this, so that fetchValue doesn't write to nothing
 			// Why couldn't this stupid thing be done in one line??!? I DONT UNDERSTAND IT!
 			float[] val = new float[1];
-			SENSOR_2.fetchSample(val, 0);
+			SENSOR_1.fetchSample(val, 0);
 			// System.out.println("Current sample: " + val[0]);
 			return (int)((val[0]));
 		},
@@ -80,12 +88,100 @@ public class Main
 			float[] val = new float[1];
 			SENSOR_2.fetchSample(val, 0);
 			return (int)((val[0]));
-		}, 360, RelativeDirection.LEFT, .05f, () -> true);
+		}, 100, RelativeDirection.LEFT, .25f, () -> true);
 		
-		implementedTrackManager.getFoundTrackEvent().subscribe((trackArgs) -> System.out.println("Event was called!"));
+		ITask waitForButtonPress = (taskManager) ->
+		{
+			Button.waitForAnyPress();
+			return true;
+		};
 		
-		/*
-		sequentialTaskManager.addTask((taskManager) ->
+		ITask slide = (taskManager) ->
+		{
+			int turnAmount = 880;
+			
+			movementController.backward();
+			movementController.turnRight(1);
+			movementController.setSpeed(360);
+			movementController.updateMotorState();
+			
+			ADDITIONAL_1.setSpeed(880);
+			ADDITIONAL_2.setSpeed(880);
+			
+			ADDITIONAL_1.rotate(-turnAmount, true);
+			ADDITIONAL_2.rotate(turnAmount, false);
+			
+			movementController.turnLeft(0);
+			movementController.forward();
+			movementController.updateMotorState();
+			Delay.msDelay(100);
+			
+			movementController.backward();
+			movementController.turnRight(1);
+			movementController.updateMotorState();
+			
+			Delay.msDelay(1000);
+			
+			movementController.stop();
+			movementController.updateMotorState();
+			
+			return true;
+		};
+		
+		ITask basketball = (taskManager) -> 
+		{
+			int turnAmount = 1250;
+			
+			// Up
+			ADDITIONAL_1.setSpeed(760);
+			ADDITIONAL_2.setSpeed(760);
+			ADDITIONAL_1.rotate(-turnAmount, true);
+			ADDITIONAL_2.rotate(turnAmount, false);
+
+			// Drive forward
+			movementController.setSpeed(360);
+			movementController.turnLeft(0);
+			movementController.forward();
+			movementController.updateMotorState();
+			
+			// Down
+			ADDITIONAL_1.rotate(turnAmount, true);
+			ADDITIONAL_2.rotate(-turnAmount, true);
+			Delay.msDelay(1400);
+			
+			// Drive backward
+			movementController.stop();
+			movementController.updateMotorState();
+			Delay.msDelay(250);
+			movementController.backward();
+			movementController.updateMotorState();
+			Delay.msDelay(1400);
+			
+			//Up
+			movementController.stop();
+			movementController.updateMotorState();
+			ADDITIONAL_1.rotate(-turnAmount, true);
+			ADDITIONAL_2.rotate(turnAmount, false);
+			
+			return true;
+		};
+		
+		ITask goUnderPushupStick = (taskManager) ->
+		{
+			movementController.setSpeed(500);
+			movementController.forward();
+			movementController.updateMotorState();
+			Delay.msDelay(3000);
+			movementController.backward();
+			movementController.updateMotorState();
+			Delay.msDelay(3000);
+			movementController.stop();
+			movementController.updateMotorState();
+			
+			return true;
+		};
+		
+		ITask pushDown = (taskManager) ->
 		{
 			int turnAmount = 1000;
 			
@@ -106,8 +202,51 @@ public class Main
 			movementController.updateMotorState();
 			
 			return true;
+		};
+		
+		ITask stickpush = (taskManager) ->
+		{
+			movementController.setSpeed(900);
+			
+			for(int i = 0; i < 17; i++)
+			{
+				movementController.forward();
+				movementController.updateMotorState();
+				Delay.msDelay(200);
+				movementController.backward();
+				movementController.updateMotorState();
+				Delay.msDelay(100);
+			}
+			
+			return true;
+		};
+		
+		/*
+		TrackGuard trackGuard = new TrackGuard.Builder().setAdvancedFollowTrackBehaviour(implementedTrackManager)
+				.addTrackExecutor((trackArgs) -> 
+				{
+					movementController.turnLeft(1);
+					movementController.forward();
+					movementController.updateMotorState();
+					Delay.msDelay(5000);
+					sequentialTaskManager.addTask(slide);
+				}, 3).build();
+				*/
+		
+		implementedTrackManager.setCurrentDirection(RelativeDirection.BACKWARD);
+		
+		sequentialTaskManager.addTask((taskManager) ->
+		{
+			movementController.forward();
+			movementController.setSpeed(1000);
+			movementController.updateMotorState();
+			Delay.msDelay(2000);
+			movementController.stop();
+			movementController.updateMotorState();
+			return true;
 		});
-		*/
+		
+		sequentialTaskManager.addTask(stickpush);
 		
 		/*
 		sequentialTaskManager.addTask((taskManager) ->
@@ -189,25 +328,12 @@ public class Main
 		
 		// This stick push thingy (honestly I have no idea how it is called...)
 		
-		/*
-		sequentialTaskManager.addTask((taskManager) ->
-		{
-			movementController.setSpeed(900);
-			
-			for(int i = 0; i < 17; i++)
-			{
-				movementController.forward();
-				movementController.updateMotorState();
-				Delay.msDelay(200);
-				movementController.backward();
-				movementController.updateMotorState();
-				Delay.msDelay(100);
-			}
-			
-			return true;
-		});
-		*/
 		
+
+		
+		
+		// Robodance
+		/*
 		sequentialTaskManager.addTask((taskManager) ->
 		{
 			movementController.setSpeed(600);
@@ -219,82 +345,12 @@ public class Main
 			movementController.updateMotorState();
 			return true;
 		});
+		*/
 		
 		// Slide
-		/*
-		sequentialTaskManager.addTask((taskManager) ->
-		{
-			int turnAmount = 880;
-			
-			movementController.backward();
-			movementController.turnRight(1);
-			movementController.setSpeed(360);
-			movementController.updateMotorState();
-			
-			ADDITIONAL_1.setSpeed(880);
-			ADDITIONAL_2.setSpeed(880);
-			
-			ADDITIONAL_1.rotate(-turnAmount, true);
-			ADDITIONAL_2.rotate(turnAmount, false);
-			
-			movementController.turnLeft(0);
-			movementController.forward();
-			movementController.updateMotorState();
-			Delay.msDelay(100);
-			
-			movementController.backward();
-			movementController.turnRight(1);
-			movementController.updateMotorState();
-			
-			Delay.msDelay(1000);
-			
-			movementController.stop();
-			movementController.updateMotorState();
-			
-			return true;
-		});
-		*/
+
 		
 		// Basketball
-		/*
-		sequentialTaskManager.addTask((taskManager) -> 
-		{
-			int turnAmount = 1250;
-			
-			// Up
-			ADDITIONAL_1.setSpeed(760);
-			ADDITIONAL_2.setSpeed(760);
-			ADDITIONAL_1.rotate(-turnAmount, true);
-			ADDITIONAL_2.rotate(turnAmount, false);
-
-			// Drive forward
-			movementController.setSpeed(360);
-			movementController.turnLeft(0);
-			movementController.forward();
-			movementController.updateMotorState();
-			
-			// Down
-			ADDITIONAL_1.rotate(turnAmount, true);
-			ADDITIONAL_2.rotate(-turnAmount, true);
-			Delay.msDelay(1400);
-			
-			// Drive backward
-			movementController.stop();
-			movementController.updateMotorState();
-			Delay.msDelay(250);
-			movementController.backward();
-			movementController.updateMotorState();
-			Delay.msDelay(1400);
-			
-			//Up
-			movementController.stop();
-			movementController.updateMotorState();
-			ADDITIONAL_1.rotate(-turnAmount, true);
-			ADDITIONAL_2.rotate(turnAmount, false);
-			
-			return true;
-		});
-		*/
 		
 		Behavior[] behaviours = new Behavior[] {
 			concurrentTaskManager, sequentialTaskManager
@@ -324,13 +380,16 @@ public class Main
 		System.out.println("The highest is: " + highest);
 		*/
 		
-		
-		
+		// Note on performance: We have only 3 checks per second, which is very bad... 2.905259011227103 2.9798251184602607 
+		Profiler.start();
 		Arbitrator arbitrator = new Arbitrator(behaviours, true);
 		arbitrator.go();
 		movementController.stop();
 		movementController.updateMotorState();
+		Profiler.stop();
 		
+		RIGHT.setPattern(1);
+		LEFT.setPattern(2);
 		
 		System.out.println("Exited.");
 	}

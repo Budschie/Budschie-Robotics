@@ -4,13 +4,15 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import de.budschie.robotics.event_handling.FoundTrackEvent;
+import de.budschie.robotics.event_handling.TrackEvent;
 import de.budschie.robotics.event_handling.FoundTrackEventArgs;
 import lejos.robotics.subsumption.Behavior;
 
 public class AdvancedFollowTrackBehaviour extends FollowTrackBehaviour
 {
-	private FoundTrackEvent foundTrackEvent = new FoundTrackEvent();
+	private boolean foundLeftTrackLastFrame = false;
+	private boolean foundRightTrackLastFrame = false;
+	private TrackEvent foundTrackEvent = new TrackEvent(), lostTrackEvent = new TrackEvent(), updateTrackEvent = new TrackEvent();
 	private Supplier<Boolean> foundTrackLeft, foundTrackRight;
 	
 	public AdvancedFollowTrackBehaviour(Supplier<Optional<Float>> correctionLeft,
@@ -31,9 +33,19 @@ public class AdvancedFollowTrackBehaviour extends FollowTrackBehaviour
 		this.foundTrackRight = foundTrackRight;
 	}
 	
-	public FoundTrackEvent getFoundTrackEvent()
+	public TrackEvent getFoundTrackEvent()
 	{
 		return foundTrackEvent;
+	}
+	
+	public TrackEvent getLostTrackEvent()
+	{
+		return lostTrackEvent;
+	}
+	
+	public TrackEvent getUpdateTrackEvent()
+	{
+		return updateTrackEvent;
 	}
 	
 	public boolean hasFoundTrackLeft()
@@ -51,20 +63,37 @@ public class AdvancedFollowTrackBehaviour extends FollowTrackBehaviour
 	{		
 		boolean movementCanceled = false;
 		
-		if(hasFoundTrackLeft())
+		boolean hasFoundTrackLeft = hasFoundTrackLeft(), hasFoundTrackRight = hasFoundTrackRight();
+		
+		if(hasFoundTrackLeft || foundLeftTrackLastFrame)
 		{
 			FoundTrackEventArgs args = new FoundTrackEventArgs(RelativeDirection.LEFT); 
-			foundTrackEvent.fire(args);
+			
+			if(hasFoundTrackLeft && foundLeftTrackLastFrame)
+				updateTrackEvent.fire(args);
+			else if(!hasFoundTrackLeft && foundLeftTrackLastFrame)
+				lostTrackEvent.fire(args);
+			else if(hasFoundTrackLeft && !foundLeftTrackLastFrame)
+				foundTrackEvent.fire(args);
 			
 			movementCanceled |= args.isMovementCanceled();
+			foundLeftTrackLastFrame = hasFoundTrackLeft;
 		}
+
 		
-		if(hasFoundTrackRight())
+		if(hasFoundTrackRight || foundRightTrackLastFrame)
 		{
 			FoundTrackEventArgs args = new FoundTrackEventArgs(RelativeDirection.RIGHT); 
-			foundTrackEvent.fire(args);
+
+			if(hasFoundTrackRight && foundRightTrackLastFrame)
+				updateTrackEvent.fire(args);
+			else if(!hasFoundTrackRight && foundRightTrackLastFrame)
+				lostTrackEvent.fire(args);
+			else if(hasFoundTrackRight && !foundRightTrackLastFrame)
+				foundTrackEvent.fire(args);
 			
 			movementCanceled |= args.isMovementCanceled();
+			foundRightTrackLastFrame = hasFoundTrackRight;
 		}
 		
 		if(!movementCanceled)

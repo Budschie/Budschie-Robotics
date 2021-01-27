@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import de.budschie.robotics.profiling.Profiler;
 import ev3dev.sensors.ev3.EV3ColorSensor;
 import lejos.robotics.subsumption.Behavior;
 
@@ -11,7 +12,8 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 {
 	Supplier<Optional<Float>> leftCorrection, rightCorrection;
 	IAbstractMovementController movementController;
-	int speed;
+	protected int speed;
+	protected RelativeDirection currentDirection = RelativeDirection.FORWARD;
 	
 	public FollowTrackBehaviour(Supplier<Optional<Float>> leftCorrection, Supplier<Optional<Float>> rightCorrection, IAbstractMovementController movementController, int speed)
 	{
@@ -45,7 +47,10 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 		if(leftCorrectionCalculated.isPresent())
 		{
 			// Go right
-			movementController.turnRight(leftCorrectionCalculated.get());
+			if(currentDirection == RelativeDirection.FORWARD)
+				movementController.turnRight(leftCorrectionCalculated.get());
+			else
+				movementController.turnLeft(leftCorrectionCalculated.get());
 			// System.out.printf("We're not right enough by %f.%n", leftCorrectionCalculated.get());
 			edited = true;
 			turnLeftFlag = false;
@@ -54,7 +59,11 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 		else if(rightCorrectionCalculated.isPresent())
 		{
 			// Go left
-			movementController.turnLeft(rightCorrectionCalculated.get());
+			if(currentDirection == RelativeDirection.FORWARD)
+				movementController.turnLeft(rightCorrectionCalculated.get());
+			else
+				movementController.turnRight(rightCorrectionCalculated.get());
+			
 			// System.out.printf("We're not left enough by %f.%n", rightCorrectionCalculated.get());
 			edited = true;
 			turnLeftFlag = false;
@@ -63,6 +72,7 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 		{
 			if(!turnLeftFlag)
 			{
+				System.out.println("Reset");
 				movementController.turnLeft(0);
 				edited = true;
 				turnLeftFlag = true;
@@ -72,8 +82,24 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 		if(edited)
 		{
 			movementController.setSpeed(speed);
+			if(this.currentDirection == RelativeDirection.FORWARD)
+				movementController.forward();
+			else
+				movementController.backward();
 			movementController.updateMotorState();
 		}
+		
+		Profiler.addRefresh();
+	}
+	
+	public void setSpeed(int speed)
+	{
+		this.speed = speed;
+	}
+	
+	public void setCurrentDirection(RelativeDirection currentDirection)
+	{
+		this.currentDirection = currentDirection;
 	}
 	
 	public Optional<Float> getLeftCorrection()
