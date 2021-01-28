@@ -1,10 +1,13 @@
 package de.budschie.robotics;
 
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
+import de.budschie.robotics.behaviours.CustomArbitrator;
 import de.budschie.robotics.behaviours.ImplementedAdvancedFollowTrackBehaviour;
 import de.budschie.robotics.behaviours.RelativeDirection;
 import de.budschie.robotics.behaviours.TimedBehaviour;
 import de.budschie.robotics.behaviours.WheelBasedMovementController;
-import de.budschie.robotics.navigator.TrackGuard;
 import de.budschie.robotics.profiling.Profiler;
 import de.budschie.robotics.tasks.ITask;
 import de.budschie.robotics.tasks.TaskExecutors;
@@ -16,7 +19,6 @@ import ev3dev.sensors.Button;
 import ev3dev.sensors.ev3.EV3ColorSensor;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.SensorPort;
-import lejos.robotics.subsumption.Arbitrator;
 import lejos.robotics.subsumption.Behavior;
 import lejos.utility.Delay;
 
@@ -48,29 +50,29 @@ public class Main
 		
 		//System.out.println("Available modes: " + String.join(", ", SENSOR_1.getAvailableModes()));
 		TimeManager timeManager = new TimeManager();
-		timeManager.start();
-		Profiler.start();
-		
-		// SENSOR_1.switchMode("REFLECT", 0);
-		// SENSOR_2.switchMode("REFLECT", 0);
-		
-		System.out.println("Starting SUPER SAMPLER (DUN DUN DUUUUUN)");
-		
-		
-		while(timeManager.getElapsedTime() < 60000)
-		{
-			float[] val = new float[1];
-			SENSOR_1.fetchSample(val, 0);
-			int yeet = (int) val[0];
-			
-			float[] val2 = new float[1];
-			SENSOR_2.fetchSample(val2, 0);
-			int yeet2 = (int)((val2[0]));
-			
-			Profiler.addRefresh();
-		}
-		
-		Profiler.stop();
+//		timeManager.start();
+//		Profiler.start();
+//		
+//		// SENSOR_1.switchMode("REFLECT", 0);
+//		// SENSOR_2.switchMode("REFLECT", 0);
+//		
+//		System.out.println("Starting SUPER SAMPLER (DUN DUN DUUUUUN)");
+//		
+//		
+//		while(timeManager.getElapsedTime() < 60000)
+//		{
+//			float[] val = new float[1];
+//			SENSOR_1.fetchSample(val, 0);
+//			int yeet = (int) val[0];
+//			
+//			float[] val2 = new float[1];
+//			SENSOR_2.fetchSample(val2, 0);
+//			int yeet2 = (int)((val2[0]));
+//			
+//			Profiler.addRefresh();
+//		}
+//		
+//		Profiler.stop();
 		
 		//System.out.println("We were able to sample both sensors " + amount + "times in 60000 seconds.");
 		
@@ -98,22 +100,31 @@ public class Main
 		// Eclipse is a sh***ole of a software. Why is the detection of compile errors in lambda expressions downright bad???
 		
 		// If this **** doesn't work, just make it slower...
-		ImplementedAdvancedFollowTrackBehaviour implementedTrackManager = new ImplementedAdvancedFollowTrackBehaviour((value) -> (value < 380), movementController, () -> 
+		
+		Predicate<Integer> isBlack = (value) -> (value < 380);
+		Supplier<Integer> leftSupplier = () -> 
 		{
 			// We need to init this, so that fetchValue doesn't write to nothing
 			// Why couldn't this stupid thing be done in one line??!? I DONT UNDERSTAND IT!
 			float[] val = new float[1];
 			SENSOR_1.fetchSample(val, 0);
 			// System.out.println("Current sample: " + val[0]);
-			return (int)((val[0]));
-		},
+			return (int) ((val[0]));
+		};
 		// Did I mention eclipse's handling of compile errors in lambda expressions is a pain in the a**?
-		() -> 
+		Supplier<Integer> rightSupplier = () ->
 		{
 			float[] val = new float[1];
 			SENSOR_2.fetchSample(val, 0);
-			return (int)((val[0]));
-		}, 250, 600, .75f, RelativeDirection.RIGHT, .5f, () -> true);
+			return (int) ((val[0]));
+		};
+		
+		// Implement lazyness, so that he will do black for at least .25 seconds etc pp
+		ImplementedAdvancedFollowTrackBehaviour implementedTrackManager = new ImplementedAdvancedFollowTrackBehaviour(isBlack, movementController, leftSupplier, rightSupplier, 250, 2000, 0f, RelativeDirection.RIGHT, 1f, () -> true);
+		
+		implementedTrackManager.setPersistantModeActivated(true);
+		implementedTrackManager.setPersistingThresholdLeft(250);
+		implementedTrackManager.setPersistingThresholdRight(250);
 		
 		ITask waitForButtonPress = (taskManager) ->
 		{
@@ -264,9 +275,21 @@ public class Main
 		
 		sequentialTaskManager.addTask((taskManager) ->
 		{
+			movementController.setSpeed(500);
+			movementController.forward();
+			movementController.updateMotorState();
+			Delay.msDelay(3000);
+			movementController.backward();
+			movementController.updateMotorState();
+			Delay.msDelay(4000);
+			movementController.stop();
+			movementController.updateMotorState();
+			taskManager.addTask(waitForButtonPress);
+			
 			return true;
 		});
 		
+		/*
 		TrackGuard trackGuard = new TrackGuard.Builder().setAdvancedFollowTrackBehaviour(implementedTrackManager)
 				.addTrackExecutor((trackArgs) ->
 				{
@@ -293,9 +316,34 @@ public class Main
 						movementController.updateMotorState();
 						Delay.msDelay(600);
 						
+						movementController.turnLeft(.75f);
+						movementController.forward();
+						movementController.updateMotorState();
+						
+						while(!isBlack.test(leftSupplier.get()))
+						{
+							
+						}
+						
+						movementController.stop();
+						movementController.updateMotorState();
+						
+						implementedTrackManager.setCurrentDirection(RelativeDirection.LEFT);
+						
 						return true;
 					});
-				}, 0).build();
+				}, 0)
+				.addTrackExecutor((trackArgs) -> 
+				{
+					movementController.turnLeft(1);
+					movementController.setSpeed(600);
+					movementController.updateMotorState();
+					Delay.msDelay(600);
+					movementController.stop();
+					sequentialTaskManager.addTask(goUnderPushupStick);
+				}, 1)
+				.build();
+				*/
 		
 		
 		
@@ -421,8 +469,8 @@ public class Main
 		// Basketball
 		
 		Behavior[] behaviours = new Behavior[] {
-			concurrentTaskManager, sequentialTaskManager,
-			TimedBehaviour.of(implementedTrackManager, timeManager, 0, 150000)
+			//concurrentTaskManager, sequentialTaskManager,
+			TimedBehaviour.of(implementedTrackManager, timeManager, 0, 60000)
 		};
 		
 			
@@ -449,10 +497,20 @@ public class Main
 		*/
 		
 		// Note on performance: We have only 3 checks per second, which is very bad... 2.905259011227103 2.9798251184602607 
+		System.out.println("TimeManager is " + timeManager);
 		Profiler.start();
-		timeManager.start();
+		
+		/*
 		Arbitrator arbitrator = new Arbitrator(behaviours, true);
 		arbitrator.go();
+		*/
+		
+		// Custom arbitrator has an elapse rate of 6.885568410698394
+		// Normal arbitrator has an elapse rate of 3.269958424814313
+		// Without comments: 
+		
+		CustomArbitrator arbitrator = new CustomArbitrator(behaviours);
+		arbitrator.start();
 		movementController.stop();
 		movementController.updateMotorState();
 		Profiler.stop();

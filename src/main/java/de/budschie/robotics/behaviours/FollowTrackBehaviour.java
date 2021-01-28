@@ -1,15 +1,20 @@
 package de.budschie.robotics.behaviours;
 
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import de.budschie.robotics.profiling.Profiler;
-import ev3dev.sensors.ev3.EV3ColorSensor;
-import lejos.robotics.subsumption.Behavior;
 
 public class FollowTrackBehaviour extends AbstractBehaviour
 {
+	private static final long INVALID = -1l;
+	
+	/** -1 Indicates that we must sample the time. **/
+	private long leftTime = INVALID, rightTime = INVALID;
+	private boolean persistantModeActivated;
+	private long persistingThresholdLeft, persistingThresholdRight;
+	private Optional<Float> lastLeft = Optional.empty(), lastRight = Optional.empty();
+	
 	Supplier<Optional<Float>> leftCorrection, rightCorrection;
 	IAbstractMovementController movementController;
 	protected int speed;
@@ -33,13 +38,69 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 	}
 	
 	private boolean turnLeftFlag = false;
-	private boolean init = true;
 
 	@Override
 	public void action()
 	{
 		Optional<Float> leftCorrectionCalculated = getLeftCorrection();
 		Optional<Float> rightCorrectionCalculated = getRightCorrection();
+		
+		// Maybe we should normalize the result by subtracting the lowest from the biggest, but that is something for another time...
+		
+		if(persistantModeActivated)
+		{
+			if (leftCorrectionCalculated.isPresent())
+			{
+				boolean shouldSetLeft = rightTime == INVALID && leftTime == INVALID;
+
+				if (rightTime != INVALID)
+				{
+					// Calc delta time
+					long deltaTime = System.currentTimeMillis() - rightTime;
+
+					if (deltaTime > persistingThresholdRight)
+					{
+						shouldSetLeft = true;
+					} else
+					{
+						leftCorrectionCalculated = Optional.empty();
+						rightCorrectionCalculated = lastRight;
+					}
+				}
+
+				if (shouldSetLeft)
+				{
+					lastLeft = leftCorrectionCalculated;
+					leftTime = System.currentTimeMillis();
+					rightTime = INVALID;
+				}
+			} else if (rightCorrectionCalculated.isPresent())
+			{
+				boolean shouldSetRight = leftTime == INVALID && rightTime == INVALID;
+
+				if (leftTime != INVALID)
+				{
+					// Calc delta time
+					long deltaTime = System.currentTimeMillis() - leftTime;
+
+					if (deltaTime > persistingThresholdLeft)
+					{
+						shouldSetRight = true;
+					} else
+					{
+						rightCorrectionCalculated = Optional.empty();
+						leftCorrectionCalculated = lastLeft;
+					}
+				}
+
+				if (shouldSetRight)
+				{
+					lastRight = rightCorrectionCalculated;
+					rightTime = System.currentTimeMillis();
+					leftTime = INVALID;
+				}
+			}
+		}
 		
 		Optional<Float> bias = getBias();
 		
@@ -127,6 +188,21 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 		}
 		
 		Profiler.addRefresh();
+	}
+	
+	public void setPersistantModeActivated(boolean persistantModeActivated)
+	{
+		this.persistantModeActivated = persistantModeActivated;
+	}
+	
+	public void setPersistingThresholdLeft(long persistingThresholdLeft)
+	{
+		this.persistingThresholdLeft = persistingThresholdLeft;
+	}
+	
+	public void setPersistingThresholdRight(long persistingThresholdRight)
+	{
+		this.persistingThresholdRight = persistingThresholdRight;
 	}
 	
 	public void setSpeed(int speed)

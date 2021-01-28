@@ -27,6 +27,9 @@ public class TimedBehaviour implements Behavior
 		// System.out.println("TimePredicate is " + timePredicate);
 		// System.out.println("TakeControl is " + takeControl);
 		
+		//if(!(timePredicate && takeControl))
+			//System.out.println("Exiting because one of timePredicate (" + timePredicate + ") or takeControl (" + takeControl + ") is false... BTW the manager is " + timeManager);
+		
 		return timePredicate && takeControl;
 	}
 
@@ -48,7 +51,7 @@ public class TimedBehaviour implements Behavior
 		{
 			long elapsedTime = time.getElapsedTime();
 			//System.out.println("Currently elapsed time: " + elapsedTime + "; lower " + lower + "; greater " + greater);
-			return elapsedTime > lower && elapsedTime < greater;
+			return elapsedTime >= lower && elapsedTime <= greater;
 		});
 	}
 	
@@ -57,7 +60,7 @@ public class TimedBehaviour implements Behavior
 		return new TimedBehaviour(behaviour, timeManager, (time) ->
 		{
 			long elapsedTime = time.getElapsedTime();
-			return elapsedTime > lower;
+			return elapsedTime >= lower;
 		});
 	}
 	
@@ -66,7 +69,7 @@ public class TimedBehaviour implements Behavior
 		return new TimedBehaviour(behaviour, timeManager, (time) ->
 		{
 			long elapsedTime = time.getElapsedTime();
-			return elapsedTime < greater;
+			return elapsedTime <= greater;
 		});
 	}
 }

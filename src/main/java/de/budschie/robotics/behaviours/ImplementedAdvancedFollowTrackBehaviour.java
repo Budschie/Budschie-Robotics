@@ -14,7 +14,6 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 	
 	/** This indicates whether we use the right sensor to look after new tracks({@link RelativeDirection.RIGHT} or the left sensor({@link RelativeDirection.LEFT}. **/
 	private RelativeDirection currentTrackDetection;
-	private boolean transitioning;
 	private Predicate<Integer> isBlack;
 	private Supplier<Integer> valueLeft, valueRight;
 	private float correctionStrength;
@@ -132,6 +131,11 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 		}
 		
 		return Optional.empty();
+	}
+	
+	public void setCurrentTrackDetection(RelativeDirection currentTrackDetection)
+	{
+		this.currentTrackDetection = currentTrackDetection;
 	}
 	
 	@Override
