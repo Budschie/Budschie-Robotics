@@ -1,16 +1,16 @@
 package de.budschie.robotics.behaviours;
 
-import ev3dev.actuators.lego.motors.NXTRegulatedMotor;
+import ev3dev.actuators.lego.motors.BaseRegulatedMotor;
 
 public class WheelBasedMovementController implements IAbstractMovementController
 {
-	NXTRegulatedMotor motorLeft, motorRight;
+	BaseRegulatedMotor motorLeft, motorRight;
 	int speed = 1;
 	float percentage = 1;
 	RelativeDirection turnDirection = RelativeDirection.LEFT;
 	RelativeDirection driveDirection = RelativeDirection.FORWARD;
 	
-	public WheelBasedMovementController(NXTRegulatedMotor motorLeft, NXTRegulatedMotor motorRight)
+	public WheelBasedMovementController(BaseRegulatedMotor motorLeft, BaseRegulatedMotor motorRight)
 	{
 		this.motorLeft = motorLeft;
 		this.motorRight = motorRight;

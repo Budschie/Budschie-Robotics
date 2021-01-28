@@ -8,12 +8,15 @@ import de.budschie.robotics.behaviours.ImplementedAdvancedFollowTrackBehaviour;
 import de.budschie.robotics.behaviours.RelativeDirection;
 import de.budschie.robotics.behaviours.TimedBehaviour;
 import de.budschie.robotics.behaviours.WheelBasedMovementController;
+import de.budschie.robotics.navigator.TrackGuard;
 import de.budschie.robotics.profiling.Profiler;
 import de.budschie.robotics.tasks.ITask;
 import de.budschie.robotics.tasks.TaskExecutors;
 import de.budschie.robotics.tasks.TaskManager;
 import de.budschie.robotics.time.TimeManager;
 import ev3dev.actuators.ev3.EV3Led;
+import ev3dev.actuators.lego.motors.EV3LargeRegulatedMotor;
+import ev3dev.actuators.lego.motors.EV3MediumRegulatedMotor;
 import ev3dev.actuators.lego.motors.NXTRegulatedMotor;
 import ev3dev.sensors.Button;
 import ev3dev.sensors.ev3.EV3ColorSensor;
@@ -33,15 +36,15 @@ public class Main
 	public static final EV3ColorSensor SENSOR_2 = new EV3ColorSensor(SensorPort.S1);
 	
 	
-	public static final NXTRegulatedMotor MOTOR_LEFT = new NXTRegulatedMotor(MotorPort.A);
-	public static final NXTRegulatedMotor MOTOR_RIGHT = new NXTRegulatedMotor(MotorPort.D);
+	public static final EV3LargeRegulatedMotor MOTOR_LEFT = new EV3LargeRegulatedMotor(MotorPort.A);
+	public static final EV3LargeRegulatedMotor MOTOR_RIGHT = new EV3LargeRegulatedMotor(MotorPort.D);
 	
-	public static final NXTRegulatedMotor ADDITIONAL_1 = new NXTRegulatedMotor(MotorPort.B);
-	public static final NXTRegulatedMotor ADDITIONAL_2 = new NXTRegulatedMotor(MotorPort.C);
+	public static final EV3MediumRegulatedMotor ADDITIONAL_1 = new EV3MediumRegulatedMotor(MotorPort.B);
+	public static final EV3MediumRegulatedMotor ADDITIONAL_2 = new EV3MediumRegulatedMotor(MotorPort.C);
 
 	public static void main(String[] args)
 	{		
-		
+		// TODO: AUF DAS COLOQIUM VORBEREITEN
 		
 		// ZEIT: 2 min 30 sek
 		
@@ -120,11 +123,13 @@ public class Main
 		};
 		
 		// Implement lazyness, so that he will do black for at least .25 seconds etc pp
-		ImplementedAdvancedFollowTrackBehaviour implementedTrackManager = new ImplementedAdvancedFollowTrackBehaviour(isBlack, movementController, leftSupplier, rightSupplier, 250, 2000, 0f, RelativeDirection.RIGHT, 1f, () -> true);
+		ImplementedAdvancedFollowTrackBehaviour implementedTrackManager = new ImplementedAdvancedFollowTrackBehaviour(isBlack, movementController, leftSupplier, rightSupplier, 250, 1000, .25f, RelativeDirection.LEFT, .5f, () -> true);
 		
 		implementedTrackManager.setPersistantModeActivated(true);
 		implementedTrackManager.setPersistingThresholdLeft(250);
 		implementedTrackManager.setPersistingThresholdRight(250);
+		
+		implementedTrackManager.setCurrentDirection(RelativeDirection.BACKWARD);
 		
 		ITask waitForButtonPress = (taskManager) ->
 		{
@@ -166,6 +171,7 @@ public class Main
 		
 		ITask basketball = (taskManager) -> 
 		{
+			System.out.println("Started basketball");
 			int turnAmount = 1250;
 			
 			// Up
@@ -198,10 +204,11 @@ public class Main
 			movementController.updateMotorState();
 			ADDITIONAL_1.rotate(-turnAmount, true);
 			ADDITIONAL_2.rotate(turnAmount, false);
-			
+			System.out.println("Finished basketball");
 			return true;
 		};
 		
+		// Gesperrt, weil man das hier am Ende machen muss und es sonst keine Punkte gibt
 		ITask goUnderPushupStick = (taskManager) ->
 		{
 			movementController.setSpeed(500);
@@ -271,8 +278,8 @@ public class Main
 				}, 3).build();
 				*/
 		
-		implementedTrackManager.setCurrentDirection(RelativeDirection.BACKWARD);
 		
+		/*
 		sequentialTaskManager.addTask((taskManager) ->
 		{
 			movementController.setSpeed(500);
@@ -288,9 +295,10 @@ public class Main
 			
 			return true;
 		});
+		*/
 		
-		/*
 		TrackGuard trackGuard = new TrackGuard.Builder().setAdvancedFollowTrackBehaviour(implementedTrackManager)
+				/*
 				.addTrackExecutor((trackArgs) ->
 				{
 					sequentialTaskManager.addTask((taskManager) ->
@@ -342,8 +350,39 @@ public class Main
 					movementController.stop();
 					sequentialTaskManager.addTask(goUnderPushupStick);
 				}, 1)
-				.build();
 				*/
+				.addTrackExecutor((trackArgs) ->
+				{
+					System.out.println("We are now doing our job...");
+					
+					System.out.println("Trying to rotate");
+					ADDITIONAL_1.setSpeed(400);
+					ADDITIONAL_2.setSpeed(400);
+					ADDITIONAL_1.rotate(-400, true);
+					ADDITIONAL_2.rotate(400, false);
+					System.out.println("Rotated");
+					
+					movementController.setSpeed(600);
+					movementController.turnLeft(.25f);
+					movementController.backward();
+					movementController.updateMotorState();
+					Delay.msDelay(1000);
+					movementController.forward();
+					movementController.updateMotorState();
+					Delay.msDelay(200);
+					
+					ADDITIONAL_1.rotate(400, true);
+					ADDITIONAL_2.rotate(-400, false);
+					
+					movementController.stop();
+					movementController.updateMotorState();
+					
+					sequentialTaskManager.addTask(basketball);
+					System.out.println("Added task");
+				}, 2)
+				.build();
+				
+				
 		
 		
 		
@@ -469,7 +508,7 @@ public class Main
 		// Basketball
 		
 		Behavior[] behaviours = new Behavior[] {
-			//concurrentTaskManager, sequentialTaskManager,
+			concurrentTaskManager, sequentialTaskManager,
 			TimedBehaviour.of(implementedTrackManager, timeManager, 0, 60000)
 		};
 		

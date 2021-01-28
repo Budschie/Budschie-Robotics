@@ -31,6 +31,7 @@ public class TaskManager implements Behavior
 	
 	public void addTask(ITask task)
 	{
+		System.out.println("Adding task");
 		tasks.add(task);
 	}
 	

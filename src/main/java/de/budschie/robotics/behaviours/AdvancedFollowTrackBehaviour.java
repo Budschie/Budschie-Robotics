@@ -10,6 +10,7 @@ import lejos.robotics.subsumption.Behavior;
 
 public class AdvancedFollowTrackBehaviour extends FollowTrackBehaviour
 {
+	private boolean isPassive = false;
 	private boolean foundLeftTrackLastFrame = false;
 	private boolean foundRightTrackLastFrame = false;
 	private TrackEvent foundTrackEvent = new TrackEvent(), lostTrackEvent = new TrackEvent(), updateTrackEvent = new TrackEvent();
@@ -31,6 +32,11 @@ public class AdvancedFollowTrackBehaviour extends FollowTrackBehaviour
 		super(correctionLeft, correctionRight, movementController, speed, shouldTakeControllOverrider);
 		this.foundTrackLeft = foundTrackLeft;
 		this.foundTrackRight = foundTrackRight;
+	}
+	
+	public void setPassive(boolean isPassive)
+	{
+		this.isPassive = isPassive;
 	}
 	
 	public TrackEvent getFoundTrackEvent()
@@ -111,7 +117,7 @@ public class AdvancedFollowTrackBehaviour extends FollowTrackBehaviour
 			foundRightTrackLastFrame = hasFoundTrackRight;
 		}
 		
-		if(!movementCanceled)
+		if(!movementCanceled && !isPassive)
 			super.action();
 	}
 }

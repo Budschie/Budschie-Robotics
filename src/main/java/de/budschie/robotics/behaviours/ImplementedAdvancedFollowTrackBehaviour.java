@@ -141,12 +141,26 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 	@Override
 	public boolean hasFoundTrackLeft()
 	{
-		return currentTrackDetection == RelativeDirection.LEFT && isBlack.test(valueLeft.get());
+		Supplier<Integer> valueToUse = null;
+		
+		if(currentDirection == RelativeDirection.FORWARD)
+			valueToUse = valueLeft;
+		else
+			valueToUse = valueRight;
+		
+		return currentTrackDetection == RelativeDirection.LEFT && isBlack.test(valueToUse.get());
 	}
 	
 	@Override
 	public boolean hasFoundTrackRight()
 	{
-		return currentTrackDetection == RelativeDirection.RIGHT && isBlack.test(valueRight.get());
+		Supplier<Integer> valueToUse = null;
+		
+		if(currentDirection == RelativeDirection.FORWARD)
+			valueToUse = valueRight;
+		else
+			valueToUse = valueLeft;
+
+		return currentTrackDetection == RelativeDirection.RIGHT && isBlack.test(valueToUse.get());
 	}
 }

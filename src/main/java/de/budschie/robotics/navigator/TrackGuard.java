@@ -38,6 +38,7 @@ public class TrackGuard
 		if(!trackList.isEmpty() && trackList.get(0).tracksDetected <= internalTrackCounter)
 		{
 			trackList.get(0).consumer.accept(args);
+			trackList.remove(0);
 			internalTrackCounter = 0;
 		}
 	}
