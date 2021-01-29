@@ -23,7 +23,13 @@ public class Navigator
 	/** This method will not return until we have rotated. **/
 	public void rotateAngle(int angle)
 	{
-		System.out.println("U SPIN ME RIGHT ROUND BABE RIGHT ROUND");
+		rotateAngle(angle, 0);
+	}
+	
+	/** This method will not return until we have rotated. **/
+	public void rotateAngle(int angle, long timeout)
+	{
+		long currentMS = System.currentTimeMillis();
 		int startValue = sampleSupplier.getSample()[0];
 		
 		// Calculate delta
@@ -31,7 +37,7 @@ public class Navigator
 			// while((sampleSupplier.getSample()[0] - startValue) < angle);
 			
 			whileLoop:
-			while(true)
+			while((System.currentTimeMillis() - currentMS) < timeout)
 			{
 				int delta = (sampleSupplier.getSample()[0] - startValue);
 				System.out.println(sampleSupplier.getSample()[0]);
@@ -41,7 +47,7 @@ public class Navigator
 			}
 		else
 			whileLoop:
-			while(true)
+			while((System.currentTimeMillis() - currentMS) < timeout)
 			{
 				int delta = (sampleSupplier.getSample()[0] - startValue);
 				
