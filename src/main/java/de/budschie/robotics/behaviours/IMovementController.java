@@ -23,6 +23,9 @@ public interface IMovementController
 	/** This is the speed. It is in degrees per second. **/
 	void setSpeed(int amount);
 	
+	/** This method sets the acceleration of the motor. The default is 6000. **/
+	void setAccelaration(int amount);
+	
 	/** Returns the speed that is currently set. **/
 	int getSpeed();
 	

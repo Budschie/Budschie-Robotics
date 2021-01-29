@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import ev3dev.sensors.BaseSensor;
+import lejos.robotics.SampleProvider;
 
 public class SampleSupplier<A>
 {
@@ -16,18 +17,20 @@ public class SampleSupplier<A>
 	private Optional<String> currentMode = Optional.empty();
 	long timeToSwitch;
 	long timeSinceSwitchCall;
+	Function<Float, A> caster;
 	
-	public SampleSupplier(BaseSensor baseSensor, int sampleSize, Class<A> clazz)
+	public SampleSupplier(BaseSensor baseSensor, int sampleSize, Class<A> clazz, Function<Float, A> caster)
 	{
-		this(baseSensor, null, sampleSize, clazz);
+		this(baseSensor, null, sampleSize, clazz, caster);
 	}
 	
-	public SampleSupplier(BaseSensor baseSensor, Function<A, A> modifier, int sampleSize, Class<A> clazz)
+	public SampleSupplier(BaseSensor baseSensor, Function<A, A> modifier, int sampleSize, Class<A> clazz, Function<Float, A> caster)
 	{
 		this.baseSensor = baseSensor;
 		this.modifier = Optional.ofNullable(modifier);
 		this.sampleSize = sampleSize;
 		this.clazz = clazz;
+		this.caster = caster;
 	}
 	
 	/** This is a bit different to a direct call, as it only executes this in the future. **/
@@ -48,11 +51,19 @@ public class SampleSupplier<A>
 		/** We first assert the mode here. **/
 		assertMode();
 		
+		SampleProvider sampleProvider = baseSensor.getMode(baseSensor.getCurrentMode());
+		
 		float[] input = new float[sampleSize];
-		baseSensor.fetchSample(input, 0);
+		sampleProvider.fetchSample(input, 0);
 		
 		@SuppressWarnings("unchecked")
 		A[] castedArray = (A[]) Array.newInstance(clazz, sampleSize);
+		
+		// Please java. Tell me why I have to convert this to a Float first??!? This should all be done automatically...
+		for(int i = 0; i < input.length; i++)
+		{
+			castedArray[i] = caster.apply(input[i]);
+		}
 		
 		if(modifier.isPresent())
 		{

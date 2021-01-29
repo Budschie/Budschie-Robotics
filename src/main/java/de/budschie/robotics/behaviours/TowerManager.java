@@ -33,12 +33,18 @@ public class TowerManager
 	
 	public void rotateUp(int amount, boolean immediateReturn)
 	{
-		first.rotate(-speed, true);
-		second.rotate(speed, immediateReturn);
+		first.setSpeed(speed);
+		second.setSpeed(speed);
+
+		first.rotate(-amount, true);
+		second.rotate(amount, immediateReturn);
 	}
 	
 	public void rotateDown(int amount, boolean immediateReturn)
 	{
+		first.setSpeed(speed);
+		second.setSpeed(speed);
+
 		first.rotate(speed, true);
 		second.rotate(-speed, immediateReturn);
 	}
@@ -55,15 +61,21 @@ public class TowerManager
 			first.stop();
 			second.stop();
 		}
-		else if(direction == RelativeDirection.UP)
+		else
 		{
-			first.rotate(-speed, true);
-			second.rotate(speed, true);
-		}
-		else if(direction == RelativeDirection.DOWN)
-		{
-			first.rotate(speed, true);
-			second.rotate(-speed, true);
+			first.setSpeed(speed);
+			second.setSpeed(speed);
+			
+			if(direction == RelativeDirection.UP)
+			{
+				first.rotate(-speed, true);
+				second.rotate(speed, true);
+			}
+			else if(direction == RelativeDirection.DOWN)
+			{
+				first.rotate(speed, true);
+				second.rotate(-speed, true);
+			}
 		}
 	}
 }

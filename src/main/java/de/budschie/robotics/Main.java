@@ -1,39 +1,21 @@
 package de.budschie.robotics;
 
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
-import de.budschie.robotics.behaviours.CustomArbitrator;
-import de.budschie.robotics.behaviours.ImplementedAdvancedFollowTrackBehaviour;
-import de.budschie.robotics.behaviours.RelativeDirection;
-import de.budschie.robotics.behaviours.TimedBehaviour;
-import de.budschie.robotics.behaviours.TowerManager;
-import de.budschie.robotics.behaviours.WheelBasedMovementController;
 import de.budschie.robotics.navigator.Navigator;
-import de.budschie.robotics.navigator.TrackGuard;
-import de.budschie.robotics.profiling.Profiler;
-import de.budschie.robotics.tasks.ITask;
-import de.budschie.robotics.tasks.TaskExecutors;
-import de.budschie.robotics.tasks.TaskManager;
 import de.budschie.robotics.time.TimeManager;
+import de.budschie.robotics.utils.SampleSupplier;
 import ev3dev.actuators.ev3.EV3Led;
+import ev3dev.actuators.ev3.EV3Led.Direction;
 import ev3dev.actuators.lego.motors.EV3LargeRegulatedMotor;
 import ev3dev.actuators.lego.motors.EV3MediumRegulatedMotor;
-import ev3dev.actuators.lego.motors.NXTRegulatedMotor;
-import ev3dev.sensors.Button;
 import ev3dev.sensors.ev3.EV3ColorSensor;
 import ev3dev.sensors.ev3.EV3GyroSensor;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.SensorPort;
-import lejos.robotics.Gyroscope;
-import lejos.robotics.subsumption.Behavior;
-import lejos.utility.Delay;
-import lejos.utility.GyroDirectionFinder;
 
 public class Main
 {
-	public static final EV3Led RIGHT = new EV3Led(EV3Led.RIGHT);
-	public static final EV3Led LEFT = new EV3Led(EV3Led.LEFT);
+	public static final EV3Led RIGHT = new EV3Led(Direction.RIGHT);
+	public static final EV3Led LEFT = new EV3Led(Direction.LEFT);
 	
 	// Left; In driving dir
 	public static final EV3ColorSensor SENSOR_1 = new EV3ColorSensor(SensorPort.S4);
@@ -60,49 +42,66 @@ public class Main
 		TimeManager timeManager = new TimeManager();
 		
 		EV3GyroSensor gyro = new EV3GyroSensor(SensorPort.S2);
-		gyro.reset();
+		gyro.switchMode("GYRO-ANG", 0);
 		
 		Navigator navigator = new Navigator(gyro);
 		
-		WheelBasedMovementController movementController = new WheelBasedMovementController(MOTOR_LEFT, MOTOR_RIGHT);
+		SampleSupplier<Integer> sampleSupplier = new SampleSupplier<>(gyro, 1, Integer.class, (floatIn) -> floatIn.intValue());
 		
-		movementController.turnLeft(1);
-		movementController.setSpeed(100);
-		navigator.rotateAngle(90);
+		sampleSupplier.setMode("GYRO_ANG", 0);
 		
-		
-		
-//		timeManager.start();
-//		Profiler.start();
-//		
-//		// SENSOR_1.switchMode("REFLECT", 0);
-//		// SENSOR_2.switchMode("REFLECT", 0);
-//		
-//		System.out.println("Starting SUPER SAMPLER (DUN DUN DUUUUUN)");
-//		
-//		
-//		while(timeManager.getElapsedTime() < 60000)
-//		{
-//			float[] val = new float[1];
-//			SENSOR_1.fetchSample(val, 0);
-//			int yeet = (int) val[0];
-//			
-//			float[] val2 = new float[1];
-//			SENSOR_2.fetchSample(val2, 0);
-//			int yeet2 = (int)((val2[0]));
-//			
-//			Profiler.addRefresh();
-//		}
-//		
-//		Profiler.stop();
-		
-		//System.out.println("We were able to sample both sensors " + amount + "times in 60000 seconds.");
-		
-		// Maybe I should use the lejos pilot classes, but I don't know where to find them...
-		// Which is a bit unfortunate...
-		// Edit: Can't use them because of licence issues (we'd have to use same licence for that)
+		while(true)
+		{
+			System.out.println("Value: " + sampleSupplier.getSample()[0]);
+		}
 		
 //		WheelBasedMovementController movementController = new WheelBasedMovementController(MOTOR_LEFT, MOTOR_RIGHT);
+//		
+//		// Stupid fix but it works
+////		movementController.turnLeft(1);
+////		movementController.setSpeed(100);
+////		movementController.updateMotorState();
+////		navigator.rotateAngle(360*2);
+////		movementController.turnLeft(0);
+////		movementController.stop();
+////		movementController.updateMotorState();
+////		Sound.getInstance().beep();
+//		
+//		movementController.turnLeft(0);
+//		
+//		System.out.println("Normal exit");
+//		
+//		
+//		
+////		timeManager.start();
+////		Profiler.start();
+////		
+////		// SENSOR_1.switchMode("REFLECT", 0);
+////		// SENSOR_2.switchMode("REFLECT", 0);
+////		
+////		System.out.println("Starting SUPER SAMPLER (DUN DUN DUUUUUN)");
+////		
+////		
+////		while(timeManager.getElapsedTime() < 60000)
+////		{
+////			float[] val = new float[1];
+////			SENSOR_1.fetchSample(val, 0);
+////			int yeet = (int) val[0];
+////			
+////			float[] val2 = new float[1];
+////			SENSOR_2.fetchSample(val2, 0);
+////			int yeet2 = (int)((val2[0]));
+////			
+////			Profiler.addRefresh();
+////		}
+////		
+////		Profiler.stop();
+//		
+//		//System.out.println("We were able to sample both sensors " + amount + "times in 60000 seconds.");
+//		
+//		// Maybe I should use the lejos pilot classes, but I don't know where to find them...
+//		// Which is a bit unfortunate...
+//		// Edit: Can't use them because of licence issues (we'd have to use same licence for that)
 //		
 //		TowerManager towerManager = new TowerManager(ADDITIONAL_1, ADDITIONAL_2, 0);
 //		
@@ -114,11 +113,13 @@ public class Main
 //		TaskManager sequentialTaskManager = new TaskManager(TaskExecutors.SEQUENTIAL_EXECUTOR);
 //		
 //		// Turn motor by fixed amount up, go back, turn motor down, go forward, turn motor up.
+//		/*
 //		concurrentTaskManager.addTask((task) -> 
 //		{
 //			System.out.println("YEET");
 //			return true;
 //		});
+//		*/
 //		
 //		// This code looks terrible
 //		// Eclipse is a sh***ole of a software. Why is the detection of compile errors in lambda expressions downright bad???
@@ -193,6 +194,10 @@ public class Main
 //		
 //		ITask basketball = (taskManager) -> 
 //		{
+//			movementController.turnLeft(0);
+//			movementController.stop();
+//			movementController.updateMotorState();
+//			
 //			System.out.println("Started basketball");
 //			int turnAmount = 1250;
 //			
@@ -273,9 +278,9 @@ public class Main
 //		ITask stickpush = (taskManager) ->
 //		{
 //			System.out.println("Starting StickPush...");
-//			movementController.setSpeed(900);
+//			movementController.setSpeed(400);
 //			
-//			for(int i = 0; i < 17; i++)
+//			for(int i = 0; i < 20; i++)
 //			{
 //				movementController.forward();
 //				movementController.updateMotorState();
@@ -321,197 +326,139 @@ public class Main
 //		*/
 //		
 //		TrackGuard trackGuard = new TrackGuard.Builder().setAdvancedFollowTrackBehaviour(implementedTrackManager)
-//				/*
-//				.addTrackExecutor((trackArgs) ->
-//				{
-//					sequentialTaskManager.addTask((taskManager) ->
-//					{
-//						movementController.forward();
-//						movementController.setSpeed(600);
-//						movementController.turnRight(1);
-//						movementController.updateMotorState();
-//						Delay.msDelay(600);
-//						movementController.turnRight(0);
-//						movementController.updateMotorState();
-//						Delay.msDelay(400);
-//						
-//						// Insert push thing here
-//						
-//						// Undo
-//						
-//						movementController.backward();
-//						movementController.updateMotorState();
-//						Delay.msDelay(400);
-//						movementController.backward();
-//						movementController.turnRight(1);
-//						movementController.updateMotorState();
-//						Delay.msDelay(600);
-//						
-//						movementController.turnLeft(.75f);
-//						movementController.forward();
-//						movementController.updateMotorState();
-//						
-//						while(!isBlack.test(leftSupplier.get()))
-//						{
-//							
-//						}
-//						
-//						movementController.stop();
-//						movementController.updateMotorState();
-//						
-//						implementedTrackManager.setCurrentDirection(RelativeDirection.LEFT);
-//						
-//						return true;
-//					});
-//				}, 0)
-//				.addTrackExecutor((trackArgs) -> 
-//				{
-//					movementController.turnLeft(1);
-//					movementController.setSpeed(600);
-//					movementController.updateMotorState();
-//					Delay.msDelay(600);
-//					movementController.stop();
-//					sequentialTaskManager.addTask(goUnderPushupStick);
-//				}, 1)
-//				*/
-////				.addTrackExecutor((trackArgs) ->
-////				{
-////					trackArgs.getSender().setHalted(true);
-////					System.out.println("We are now doing our job...");
-////					
-////					System.out.println("Trying to rotate");
-////					ADDITIONAL_1.setSpeed(800);
-////					ADDITIONAL_2.setSpeed(800);
-////					ADDITIONAL_1.rotate(-800, true);
-////					ADDITIONAL_2.rotate(800, false);
-////					System.out.println("Rotated");
-////					
-////					movementController.setSpeed(600);
-////					movementController.turnLeft(.5f);
-////					movementController.backward();
-////					movementController.updateMotorState();
-////					Delay.msDelay(650);
-////					movementController.setSpeed(250);
-////					movementController.turnLeft(0);
-////					movementController.forward();
-////					movementController.updateMotorState();
-////					Delay.msDelay(200);
-////					
-////					movementController.stop();
-////					movementController.updateMotorState();
-////					
-////					ADDITIONAL_1.rotate(800, true);
-////					ADDITIONAL_2.rotate(-800, false);
-////					
-////					movementController.backward();
-////					movementController.updateMotorState();
-////					
-////					Delay.msDelay(200);
-////					
-////					movementController.stop();
-////					movementController.updateMotorState();
-////					
-////					sequentialTaskManager.addTask(basketball);
-////					
-////					sequentialTaskManager.addTask((taskManager) ->
-////					{
-////						movementController.forward();
-////						movementController.turnLeft(0);
-////						movementController.setSpeed(200);
-////						movementController.updateMotorState();
-////						
-////						ADDITIONAL_1.rotate(1250, true);
-////						ADDITIONAL_2.rotate(-1250, true);
-////						
-////						while(!isBlack.test(leftSupplier.get()));
-////						movementController.setSpeed(500);
-////						movementController.turnLeft(1);
-////						movementController.updateMotorState();
-////						Delay.msDelay(800);
-////						trackArgs.getSender().setHalted(false);
-////						System.out.println("De-halted");
-////						
-////						return true;
-////					});
-////					
-////					System.out.println("Added tasks");
-////				}, 2)
-////				.addTrackExecutor((trackArgs) ->
-////				{
-////					System.out.println("HALTING");
-////					trackArgs.getSender().setHalted(true);
-////					System.out.println("THIS IS SECOND BLYAT");
-////					movementController.setSpeed(800);
-////					movementController.backward();
-////					movementController.updateMotorState();
-////					Delay.msDelay(250);
-////					movementController.turnLeft(1);
-////					movementController.updateMotorState();
-////					Delay.msDelay(500);
-////					movementController.turnLeft(0);
-////					movementController.backward();
-////					movementController.updateMotorState();
-////					Delay.msDelay(250);
-////					movementController.turnRight(1);
-////					movementController.updateMotorState();
-////					Delay.msDelay(500);
-////					/*
-////					movementController.turnLeft(0);
-////					movementController.backward();
-////					movementController.updateMotorState();
-////					Delay.msDelay(250);
-////					*/
-////					movementController.turnLeft(0);
-////					sequentialTaskManager.addTask(pushDown);
-////					sequentialTaskManager.addTask((taskManager) ->
-////					{
-////						movementController.forward();
-////						movementController.turnLeft(.5f);
-////						Delay.msDelay(750);
-////						
-////						trackArgs.getSender().setHalted(false);
-////						return true;
-////					});
-////					System.out.println("THIS WAS SECOND BLYAT");
-////				}, 4)
-//				.addTrackExecutor((trackArgs) ->
-//				{
-//					trackArgs.getSender().setHalted(true);
-//					movementController.setSpeed(600);
-//					movementController.backward();
-//					movementController.turnLeft(.55f);
-//					Delay.msDelay(1000);
-//					sequentialTaskManager.addTask(basketball);
-//					sequentialTaskManager.addTask(basketball);
-//					sequentialTaskManager.addTask((taskManager) ->
-//					{
-//						// Drive away from the basketball
-//						movementController.setSpeed(600);
-//						movementController.forward();
-//						movementController.turnLeft(.55f);
-//						
-//						while(!isBlack.test(leftSupplier.get()));
-//						
-//						towerManager.setSpeed(760);
-//						towerManager.rotateDown(1250, true);
-//						
-//						movementController.turnRight(1);
-//						Delay.msDelay(500);
-//						
-//						return true;
-//					});
-//					movementController.updateMotorState();
-//				}, 2)
-//				.addTrackExecutor((trackArgs) ->
-//				{
-//					LEFT.setPattern(9);
-//					RIGHT.setPattern(9);
-//				}, 1)
-//				.build();
-//				
-//				
+//		.addTrackExecutor((trackArgs) ->
+//		{
+//			LEFT.setPattern(2);
+//			//Sound.getInstance().playTone(400, 1500);
+//			trackArgs.getSender().setHalted(true);
+//			movementController.turnLeft(0);
+//			movementController.backward();
+//			movementController.setSpeed(100);
+//			movementController.updateMotorState();
+//			Delay.msDelay(2500);
+//			movementController.turnLeft(1);
+//			movementController.updateMotorState();
+//			navigator.rotateAngle(-35);
+//			//Sound.getInstance().twoBeeps();
+//			LEFT.setPattern(3);
+//			movementController.forward();
+//			movementController.turnLeft(0);
+//			movementController.updateMotorState();
+//			Delay.msDelay(1000);
+//			
+//			System.out.println("Rotating up...");
+//			
+//			towerManager.setSpeed(760);
+//			towerManager.rotateUp(760, false);
+//			
+//			movementController.setSpeed(400);
+//			movementController.backward();
+//			movementController.updateMotorState();
+//			Delay.msDelay(800);
+//			movementController.setSpeed(100);
+//			movementController.forward();
+//			movementController.updateMotorState();
+//			Delay.msDelay(1000);
+//			towerManager.rotateDown(760, false);
+//			movementController.backward();
+//			movementController.updateMotorState();
+//			Delay.msDelay(2000);
+//			
+//			movementController.stop();
+//			movementController.updateMotorState();
+//			
+//			sequentialTaskManager.addTask(basketball);
+//			sequentialTaskManager.addTask((taskManager) ->
+//			{
+//				trackArgs.getSender().setHalted(false);
+//				movementController.setSpeed(600);
+//				movementController.turnLeft(0);
+//				movementController.forward();
+//				Delay.msDelay(1000);
+//				RIGHT.setPattern(9);
+//				return true;
+//			});
+//		}, 2)
+//		.build();
 //		
+//		ITask taskGetToSlide = (taskManager) ->
+//		{
+//			movementController.setAccelaration(4000);
+//			movementController.setSpeed(400);
+//			movementController.backward();
+//			movementController.updateMotorState();
+//			Delay.msDelay(3000);
+//			
+//			movementController.setSpeed(200);
+//			movementController.turnRight(1);
+//			movementController.updateMotorState();
+//			navigator.rotateAngle(70);
+//			
+//			movementController.setAccelaration(6000);
+//			movementController.stop();
+//			movementController.updateMotorState();
+//			
+//			taskManager.addTask(slide);
+//			
+//			return true;
+//		};
 //		
+//		ITask taskGetToPushStick = (taskManager) ->
+//		{
+//			movementController.setAccelaration(4000);
+//			movementController.setSpeed(200);
+//			movementController.forward();
+//			movementController.turnLeft(0);
+//			movementController.updateMotorState();
+//			Delay.msDelay(8000);
+//			movementController.stop();
+//			movementController.updateMotorState();
+//			movementController.setAccelaration(6000);
+//			taskManager.addTask(stickpush);
+//			taskManager.addTask((innerTaskManager) ->
+//			{
+//				movementController.setAccelaration(4000);
+//				movementController.setSpeed(400);
+//				movementController.backward();
+//				movementController.turnLeft(0);
+//				movementController.updateMotorState();
+//				Delay.msDelay(4000);
+//				
+//				movementController.stop();
+//				movementController.updateMotorState();
+//				
+//				//trackGuard.setHalted(false);
+//				
+//				taskManager.addTask(waitForButtonPress);
+//				taskManager.addTask(taskGetToSlide);
+//				
+//				return true;
+//			});
+//			
+//			return true;
+//		};
+//				
+//		sequentialTaskManager.addTask((taskManager) ->
+//		{
+//			trackGuard.setHalted(true);
+//			
+//			movementController.setAccelaration(4000);
+//			movementController.turnLeft(0);
+//			movementController.backward();
+//			movementController.setSpeed(400);
+//			movementController.updateMotorState();
+//			Delay.msDelay(3333);
+//			movementController.forward();
+//			movementController.updateMotorState();
+//			Delay.msDelay(3000);
+//			movementController.stop();
+//			movementController.updateMotorState();
+//			movementController.setAccelaration(6000);
+//			sequentialTaskManager.addTask(waitForButtonPress);
+//			sequentialTaskManager.addTask(taskGetToPushStick);
+//			
+//			return true;
+//		});
 //		
 //		/*
 //		sequentialTaskManager.addTask((taskManager) ->

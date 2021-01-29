@@ -4,7 +4,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import de.budschie.robotics.Main;
 import de.budschie.robotics.utils.MathUtils;
 
 // OK?
@@ -48,7 +47,7 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 			
 			if(isTestedAsBlack)
 			{
-				Main.LEFT.setPattern(2);
+				//Main.LEFT.setPattern(2);
 				
 				if(!hasChangedTimeSinceLeft)
 				{
@@ -67,7 +66,7 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 			
 			if(isTestedAsBlack)
 			{
-				Main.LEFT.setPattern(2);
+				//Main.LEFT.setPattern(2);
 				
 				if(!hasChangedTimeSinceLeft)
 				{
@@ -79,7 +78,7 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 			}
 		}
 		
-		Main.LEFT.setPattern(1);
+		//Main.LEFT.setPattern(1);
 		hasChangedTimeSinceLeft = false;
 		timeSinceNotLeft = 0;
 		return Optional.empty();
@@ -100,11 +99,11 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 		{
 			hasChangedTimeSinceRight = false;
 			timeSinceNotRight = 0;
-			Main.RIGHT.setPattern(1);
+			//Main.RIGHT.setPattern(1);
 		}
 		else
 		{
-			Main.RIGHT.setPattern(2);
+			//Main.RIGHT.setPattern(2);
 			
 			if(!hasChangedTimeSinceRight)
 			{

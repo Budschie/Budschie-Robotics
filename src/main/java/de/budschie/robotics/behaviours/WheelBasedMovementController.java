@@ -6,6 +6,7 @@ public class WheelBasedMovementController implements IMovementController
 {
 	BaseRegulatedMotor motorLeft, motorRight;
 	int speed = 1;
+	int accelaration = 6000;
 	float percentage = 1;
 	RelativeDirection turnDirection = RelativeDirection.LEFT;
 	RelativeDirection driveDirection = RelativeDirection.FORWARD;
@@ -64,9 +65,14 @@ public class WheelBasedMovementController implements IMovementController
 		this.percentage = 1 - percentage;
 	}
 	
+	@Override
+	public void setAccelaration(int amount)
+	{
+		this.accelaration = amount;
+	}
+	
 	public void updateMotorState()
 	{
-		motorLeft.startSynchronization();
 		if(driveDirection == RelativeDirection.STOP)
 		{
 			motorLeft.stop();
@@ -82,6 +88,9 @@ public class WheelBasedMovementController implements IMovementController
 			// Update speed
 			float percentageOfFull = speed * percentage;
 			//System.out.printf("Speed: %f%nPercentage: %f%nPercentage of speed: %f", speed, percentage, percentageOfFull);
+			
+			motorLeft.setAcceleration(accelaration);
+			motorRight.setAcceleration(accelaration);
 			
 			if(turnDirection == RelativeDirection.LEFT)
 			{
