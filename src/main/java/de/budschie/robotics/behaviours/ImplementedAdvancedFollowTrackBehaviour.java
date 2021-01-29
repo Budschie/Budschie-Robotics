@@ -22,7 +22,7 @@ public class ImplementedAdvancedFollowTrackBehaviour extends AdvancedFollowTrack
 	private long timeAfterFullBias;
 	private float fullBias;
 	
-	public ImplementedAdvancedFollowTrackBehaviour(Predicate<Integer> isBlack, IAbstractMovementController movementController,
+	public ImplementedAdvancedFollowTrackBehaviour(Predicate<Integer> isBlack, IMovementController movementController,
 			Supplier<Integer> valueLeft, Supplier<Integer> valueRight, int speed, long timeAfterFullBias, float fullBias, RelativeDirection currentTrackDetection, float correctionStrength,
 			Supplier<Boolean> shouldTakeControllOverrider)
 	{

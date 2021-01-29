@@ -2,5 +2,5 @@ package de.budschie.robotics.behaviours;
 
 public enum RelativeDirection
 {
-	LEFT, RIGHT, FORWARD, BACKWARD, STOP, FLT
+	LEFT, RIGHT, FORWARD, BACKWARD, STOP, FLT, UP, DOWN
 }

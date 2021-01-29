@@ -1,6 +1,6 @@
 package de.budschie.robotics.behaviours;
 
-public interface IAbstractMovementController
+public interface IMovementController
 {
 	/** Calling this causes the robot to drive forwards. **/
 	void forward();

@@ -8,6 +8,7 @@ import de.budschie.robotics.event_handling.TrackEventArgs;
 
 public class TrackGuard
 {
+	private boolean halted;
 	int internalTrackCounter;
 	ArrayList<TrackPair> trackList;
 	int previousEventId;
@@ -33,13 +34,47 @@ public class TrackGuard
 	private void onDetectedTrack(TrackEventArgs args)
 	{
 		// Not feeling about doing something fancy with preIncrement today...
-		internalTrackCounter++;
 		
-		if(!trackList.isEmpty() && trackList.get(0).tracksDetected <= internalTrackCounter)
+		if(!halted)
 		{
-			trackList.get(0).consumer.accept(args);
-			trackList.remove(0);
-			internalTrackCounter = 0;
+			internalTrackCounter++;
+			
+			if(!trackList.isEmpty() && trackList.get(0).tracksDetected <= internalTrackCounter)
+			{
+				TrackGuardArgs guardArgs = new TrackGuardArgs();
+				guardArgs.args = args;
+				guardArgs.sender = this;
+				
+				trackList.get(0).consumer.accept(guardArgs);
+				trackList.remove(0);
+				internalTrackCounter = 0;
+			}
+		}
+	}
+	
+	public void setHalted(boolean halted)
+	{
+		this.halted = halted;
+	}
+	
+	public static class TrackGuardArgs
+	{
+		private TrackEventArgs args;
+		private TrackGuard sender;
+		
+		private TrackGuardArgs()
+		{
+			
+		}
+		
+		public TrackEventArgs getArgs()
+		{
+			return args;
+		}
+		
+		public TrackGuard getSender()
+		{
+			return sender;
 		}
 	}
 	
@@ -49,7 +84,7 @@ public class TrackGuard
 		AdvancedFollowTrackBehaviour advancedFollowTrackBehaviour;
 		
 		/** The given runnable will be called when the given amount of tracks was located. The, the track count will be resetted. **/
-		public Builder addTrackExecutor(Consumer<TrackEventArgs> trackExecutor, int trackAmount)
+		public Builder addTrackExecutor(Consumer<TrackGuardArgs> trackExecutor, int trackAmount)
 		{
 			TrackPair pair = new TrackPair();
 			pair.consumer = trackExecutor;
@@ -74,7 +109,7 @@ public class TrackGuard
 	
 	private static class TrackPair
 	{
-		Consumer<TrackEventArgs> consumer;
+		Consumer<TrackGuardArgs> consumer;
 		int tracksDetected;
 	}
 }

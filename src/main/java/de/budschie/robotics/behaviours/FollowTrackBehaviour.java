@@ -16,11 +16,11 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 	private Optional<Float> lastLeft = Optional.empty(), lastRight = Optional.empty();
 	
 	Supplier<Optional<Float>> leftCorrection, rightCorrection;
-	IAbstractMovementController movementController;
+	IMovementController movementController;
 	protected int speed;
 	protected RelativeDirection currentDirection = RelativeDirection.FORWARD;
 	
-	public FollowTrackBehaviour(Supplier<Optional<Float>> leftCorrection, Supplier<Optional<Float>> rightCorrection, IAbstractMovementController movementController, int speed)
+	public FollowTrackBehaviour(Supplier<Optional<Float>> leftCorrection, Supplier<Optional<Float>> rightCorrection, IMovementController movementController, int speed)
 	{
 		this.movementController = movementController;
 		this.leftCorrection = leftCorrection;
@@ -28,7 +28,7 @@ public class FollowTrackBehaviour extends AbstractBehaviour
 		this.speed = speed;
 	}
 	
-	public FollowTrackBehaviour(Supplier<Optional<Float>> leftCorrection, Supplier<Optional<Float>> rightCorrection, IAbstractMovementController movementController, int speed, Supplier<Boolean> shouldTakeControlOverrider)
+	public FollowTrackBehaviour(Supplier<Optional<Float>> leftCorrection, Supplier<Optional<Float>> rightCorrection, IMovementController movementController, int speed, Supplier<Boolean> shouldTakeControlOverrider)
 	{
 		super(shouldTakeControlOverrider);
 		this.movementController = movementController;

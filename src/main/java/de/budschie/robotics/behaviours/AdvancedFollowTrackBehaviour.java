@@ -17,7 +17,7 @@ public class AdvancedFollowTrackBehaviour extends FollowTrackBehaviour
 	private Supplier<Boolean> foundTrackLeft, foundTrackRight;
 	
 	public AdvancedFollowTrackBehaviour(Supplier<Optional<Float>> correctionLeft,
-			Supplier<Optional<Float>> correctionRight, IAbstractMovementController movementController,
+			Supplier<Optional<Float>> correctionRight, IMovementController movementController,
 			Supplier<Boolean> foundTrackLeft, Supplier<Boolean> foundTrackRight, int speed)
 	{
 		super(correctionLeft, correctionRight, movementController, speed);
@@ -26,7 +26,7 @@ public class AdvancedFollowTrackBehaviour extends FollowTrackBehaviour
 	}
 	
 	public AdvancedFollowTrackBehaviour(Supplier<Optional<Float>> correctionLeft,
-			Supplier<Optional<Float>> correctionRight, IAbstractMovementController movementController,
+			Supplier<Optional<Float>> correctionRight, IMovementController movementController,
 			Supplier<Boolean> foundTrackLeft, Supplier<Boolean> foundTrackRight, int speed, Supplier<Boolean> shouldTakeControllOverrider)
 	{
 		super(correctionLeft, correctionRight, movementController, speed, shouldTakeControllOverrider);

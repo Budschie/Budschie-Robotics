@@ -2,7 +2,7 @@ package de.budschie.robotics.behaviours;
 
 import ev3dev.actuators.lego.motors.BaseRegulatedMotor;
 
-public class WheelBasedMovementController implements IAbstractMovementController
+public class WheelBasedMovementController implements IMovementController
 {
 	BaseRegulatedMotor motorLeft, motorRight;
 	int speed = 1;
